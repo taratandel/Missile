@@ -242,8 +242,8 @@ class GL {
     }
 
     initTexture() {
-        // this.createTexture('Models/Landscape/ground_grass_3264_4062_Small.jpg');
-        this.createTexture('Models/Missile2/R73_Texture.png');
+        this.createTexture('Models/Landscape/ground_grass_3264_4062_Small.jpg');
+        // this.createTexture('Models/Missile2/R73_Texture.png');
     }
 
     drawModels() {

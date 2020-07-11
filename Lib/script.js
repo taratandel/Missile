@@ -1,5 +1,5 @@
 var landscape = utils.MakeWorld(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
-var missile = utils.MakeWorld(0.001,0.0001,0.0001,0.0001,0.001,0.001,0.001)
+var missile = utils.MakeWorld(0.1,0.1,0.1,0.1,0.1,0.1,0.1)
 
 var gl;
 
@@ -16,14 +16,14 @@ async function main() {
     var missileModel = new Model(gl.baseDir + 'Models/Missile2/R73-Ready.obj', missile);
 
 
-    // await lanscapeModel.initModel();
-    await missileModel.initModel()
+    await lanscapeModel.initModel();
+    await missileModel.initModel();
 
     gl.initMainMatrices();
     gl.initVertexArrayObject();
 
-    // gl.loadModelInGl(lanscapeModel);
-    gl.loadModelInGl(missile);
+    gl.loadModelInGl(lanscapeModel);
+    gl.loadModelInGl(missileModel);
 
 
     gl.initTexture();
