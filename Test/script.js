@@ -29,7 +29,15 @@ var landscape = {
     texture: null,
 };
 
+var directionalLightColor = [0.4, 0.3, 0.10];
 
+var dirLightAlpha = -utils.degToRad(60);
+var dirLightBeta  = -utils.degToRad(120);
+// modify the light direction
+var directionalLight = [Math.cos(dirLightAlpha) * Math.cos(dirLightBeta),
+    Math.sin(dirLightAlpha),
+    Math.cos(dirLightAlpha) * Math.sin(dirLightBeta)
+];
 // var mousePressed = false;
 // var client = {x:0, y:0};
 // function mouseSetup(canvas) {
@@ -84,6 +92,12 @@ function main() {
     var uvAttributeLocation = gl.getAttribLocation(program, "a_uv");
     var matrixLocation = gl.getUniformLocation(program, "matrix");
     var textLocation = gl.getUniformLocation(program, "u_texture");
+    // materialDiffColorHandle = gl.getUniformLocation(program, 'mDiffColor');
+    var lightDirectionHandle = gl.getUniformLocation(program, 'lightDirection');
+    var lightColorHandle = gl.getUniformLocation(program, 'lightColor');
+    var normalMatrixPositionHandle = gl.getUniformLocation(program, 'nMatrix');
+    var norm = gl.getAttribLocation(program, "in_norm");
+
 
     var perspectiveMatrix = utils.MakePerspective(70, gl.canvas.width / gl.canvas.height, 0.1, 100.0);
 
@@ -107,6 +121,12 @@ function main() {
     var indexBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(missile.obj.getIndices()), gl.STATIC_DRAW);
+
+    var normalBuffer = gl.createBuffer()
+    gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(missile.obj.getVertexNormals()), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(norm);
+    gl.vertexAttribPointer(norm, 3, gl.FLOAT, false, 0, 0);
 
     textures[0] = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, textures[0]);
@@ -142,6 +162,13 @@ function main() {
     var indexBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(landscape.obj.getIndices()), gl.STATIC_DRAW);
+
+    var normalBuffer = gl.createBuffer()
+    gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(landscape.obj.getVertexNormals()), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(norm);
+    gl.vertexAttribPointer(norm, 3, gl.FLOAT, false, 0, 0);
+
 
     textures[1] = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, textures[1]);
@@ -200,6 +227,17 @@ function main() {
             //     gl.activeTexture(gl.TEXTURE0);
             //     gl.uniform1i(textLocation, textures[1]);
             // }
+
+            var normalMatrix =  utils.invertMatrix(utils.transposeMatrix(viewWorldMatrix));
+            // here when we are creating the matrix location we should consider animation
+            // gl.uniform4f(program.lightDir, gLightDir[0], gLightDir[1], gLightDir[2], 1.0);
+            // gl.uniform3fv(materialDiffColorHandle, cubeMaterialColor);
+            var lightDirMatrix = utils.invertMatrix(utils.transposeMatrix(viewMatrix));//viewMatrix;
+            var lightDirectionTransformed = utils.multiplyMatrix3Vector3(utils.sub3x3from4x4(lightDirMatrix),directionalLight);
+            gl.uniform3fv(lightColorHandle,  directionalLightColor);
+            gl.uniform3fv(lightDirectionHandle,  lightDirectionTransformed);
+
+            gl.uniformMatrix4fv(normalMatrixPositionHandle, gl.FALSE, utils.transposeMatrix(normalMatrix));
 
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, textures[i]);

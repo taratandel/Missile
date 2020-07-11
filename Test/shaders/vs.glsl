@@ -12,9 +12,10 @@ out vec3 fs_norm;
 out vec2 fs_uv;
 
 uniform mat4 matrix;
+uniform mat4 nMatrix;     //matrix to transform normals
 void main() {
   fs_pos = a_position;
-  fs_norm = in_norm;
   fs_uv = vec2(a_uv.x, 1.0-a_uv.y);
+  fs_norm = mat3(nMatrix) * in_norm;
   gl_Position = matrix * vec4(a_position, 1.0);
 }
