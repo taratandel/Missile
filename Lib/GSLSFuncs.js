@@ -4,7 +4,6 @@ class GL {
         var path = window.location.pathname;
         var page = path.split("/").pop();
         this.baseDir = window.location.href.replace(page, '');
-        this.shaderDir = this.baseDir + 'lib/shaders/';
 
 
         // WebGL variables
@@ -26,11 +25,15 @@ class GL {
         // Main matrices
         this.perspectiveMatrix = null;
         this.viewMatrix = null;
-        this.projectionMatrix = null;
-        this.worldMatrix = null;
-        this.gLightDir = null;
+
         this.lightDir = null
-        this.skyboxWM= null;
+        this.lightDirectionHandle = null;
+        this.lightColorHandle = null;
+        this.normalMatrixPositionHandle = null;
+        this.lightDirectionTransformed = null;
+
+
+        this.directionalLightColor = [0.0, 0.0, 0.0];
         //Parameters for Camera
         this.cx = 0.0;
         this.cy = 2.0;
@@ -60,35 +63,41 @@ class GL {
         out vec2 fs_uv;
         
         uniform mat4 matrix; 
+        uniform mat4 nMatrix;     //matrix to transform normals
+
         void main() {
             fs_pos = a_position;
-	        fs_norm = in_norm;
 	        fs_uv = vec2(a_uv.x, 1.0-a_uv.y);
+	        fs_norm = mat3(nMatrix) * in_norm; 
             gl_Position = matrix * vec4(a_position, 1.0);
         }
-        `
+        `;
 
         let fs = `#version 300 es
         
-        precision highp float;
+        precision mediump float;
         
         in vec3 fs_pos;
         in vec3 fs_norm;
         in vec2 fs_uv;
+
         
         uniform sampler2D u_texture;
-        uniform vec4 lightDir;
+        uniform vec3 lightDirection; 
+        uniform vec3 lightColor;
+
         
-        out vec4 outColor;
+        out vec4 outColor; 
+
         
         void main() {
+            vec3 nNormal = normalize(fs_norm);
             vec4 texcol = texture(u_texture, fs_uv);
-            float ambFact = lightDir.w;
-            float dimFact = (1.0-ambFact) * clamp(dot(normalize(fs_norm), lightDir.xyz),0.0,1.0) + ambFact;
-            outColor = vec4(texcol.rgb , texcol.a);
-            // outColor = texture(u_texture, fs_uv);
+            vec3 lDir = lightDirection; 
+            vec3 lambertColor =  lightColor * dot(-lDir,nNormal);
+            outColor = vec4(texcol.rgb , texcol.a) + vec4(clamp(lambertColor, 0.0, 1.0), 1.0);
         }
-        `
+        `;
         //creates the shaders using utils
         var vertexShader = utils.createShader(this.gl, this.gl.VERTEX_SHADER, vs);
         var fragmentShader = utils.createShader(this.gl, this.gl.FRAGMENT_SHADER, fs);
@@ -128,7 +137,10 @@ class GL {
         this.uvAttributeLocation = this.gl.getAttribLocation(this.program, "a_uv");
         this.matrixLocation = this.gl.getUniformLocation(this.program, "matrix");
         this.textLocation = this.gl.getUniformLocation(this.program, "u_texture");
-        this.lightDir = this.gl.getUniformLocation(this.program, "lightDir");
+        // this.materialDiffColorHandle = this.gl.getUniformLocation(this.program, 'mDiffColor');
+        this.lightDirectionHandle = this.gl.getUniformLocation(this.program, 'lightDirection');
+        this.lightColorHandle = this.gl.getUniformLocation(this.program, 'lightColor');
+        this.normalMatrixPositionHandle = this.gl.getUniformLocation(this.program, 'nMatrix');
         this.norm = this.gl.getAttribLocation(this.program, "in_norm");
 
     }
@@ -139,7 +151,7 @@ class GL {
         this.gl.bindVertexArray(this.vao);
     }
 
-    initMainMatrices() {
+    initMainMatrices(model) {
         // we should make our perspective matrix
         //the z coordinates are indeed negative.
         // n  the distance from origin of the near plane corresponds to the distance of the projection plane d.
@@ -154,10 +166,19 @@ class GL {
     //    In the look-at model, the center of the camera is positioned at c=(cx, cy, cz), and the target is a point of coordinates a=(ax, ay, az).
         // The technique also requires the up vector: the direction u=(ux, uy, uz) to which the vertical side of the screen is aligned.
         // the position of the camera must be related to the position of the object
+        var dirLightAlpha = -utils.degToRad(60);
+        var dirLightBeta  = -utils.degToRad(120);
+// modify the light direction
+        var directionalLight = [Math.cos(dirLightAlpha) * Math.cos(dirLightBeta),
+            Math.sin(dirLightAlpha),
+            Math.cos(dirLightAlpha) * Math.sin(dirLightBeta)
+        ];
 
         this.viewMatrix = utils.multiplyMatrices(
             utils.MakeRotateZMatrix(-this.roll),utils.MakeView(this.cx, this.cy, this.cz, this.elevation, this.angle));
-        this.projectionMatrix  = utils.multiplyMatrices(perspectiveMatrix, viewMatrixR);
+        var lightDirMatrix = utils.invertMatrix(utils.transposeMatrix(this.viewMatrix));//viewMatrix;
+        this.lightDirectionTransformed = utils.multiplyMatrix3Vector3(utils.sub3x3from4x4(lightDirMatrix),directionalLight);
+
 
     }
 
@@ -195,6 +216,14 @@ class GL {
         this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(modelIndices), this.gl.STATIC_DRAW);
     }
 
+    createNormalBuffer(modelNormals) {
+        var normalBuffer = this.gl.createBuffer()
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, normalBuffer);
+        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(modelNormals), this.gl.STATIC_DRAW);
+        this.gl.enableVertexAttribArray(this.norm);
+        this.gl.vertexAttribPointer(this.norm, 3, this.gl.FLOAT, false, 0, 0);
+
+    }
     // I had to pass gl like this because this.gl gave some problems at runtime
     createTexture(url, gl = this.gl) {
         // Create a texture.
@@ -223,20 +252,29 @@ class GL {
     drawScene(model) {
         var viewWorldMatrix = utils.multiplyMatrices(this.viewMatrix, model.localMatrix);
         var projectionMatrix = utils.multiplyMatrices(this.perspectiveMatrix, viewWorldMatrix);
+        var normalMatrix =  utils.invertMatrix(utils.transposeMatrix(viewWorldMatrix));
         // here when we are creating the matrix location we should consider animation
         this.gl.uniformMatrix4fv(this.matrixLocation, this.gl.FALSE, utils.transposeMatrix(projectionMatrix));
-        this.gl.uniform4f(this.program.lightDir, this.gLightDir[0], this.gLightDir[1], this.gLightDir[2], 1.0);
+        // this.gl.uniform4f(this.program.lightDir, this.gLightDir[0], this.gLightDir[1], this.gLightDir[2], 1.0);
         this.gl.uniform1i(this.textLocation, this.texture);
         this.gl.activeTexture(this.gl.TEXTURE0);
+        // this.gl.uniform3fv(this.materialDiffColorHandle, this.cubeMaterialColor);
+        this.gl.uniform3fv(this.lightColorHandle,  this.directionalLightColor);
+        this.gl.uniform3fv(this.lightDirectionHandle,  this.lightDirectionTransformed);
         this.gl.bindVertexArray(this.vao);
         this.gl.drawElements(this.gl.TRIANGLES, model.getIndices().length, this.gl.UNSIGNED_SHORT, 0);
+        this.gl.uniformMatrix4fv(this.normalMatrixPositionHandle, gl.FALSE, utils.transposeMatrix(normalMatrix));
+
 
     }
+
+
 
     updateModelData(model) {
         this.createPositionBuffer(model.getVertices());
         this.createUvBuffer(model.getTextureCoord());
         this.createIndexBuffer(model.getIndices());
+        this.createNormalBuffer(model.getVertexNormals());
     }
 
     loadModelInGl(model) {
@@ -245,7 +283,7 @@ class GL {
     }
 
     initTexture() {
-        // this.createTexture('Models/Landscape/ground_grass_3264_4062_Small.jpg');
+        this.createTexture('Models/Landscape/ground_grass_3264_4062_Small.jpg');
         this.createTexture('Models/Missile2/R73_Texture.png');
     }
 

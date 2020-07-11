@@ -1,5 +1,5 @@
 var landscape = utils.MakeWorld(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
-var missile = utils.MakeWorld(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+var missile = utils.MakeWorld(-3.0, 5.0, 0.0, -90.0, -90.0, 180.0, 0.5);
 
 var gl;
 
@@ -15,7 +15,7 @@ async function main() {
     await lanscapeModel.initModel();
     await missileModel.initModel();
     gl.loadModelInGl(lanscapeModel);
-    gl.loadModelInGl(missile);
+    gl.loadModelInGl(missileModel);
     gl.initTexture();
 
     gl.clear(viewport=true);
