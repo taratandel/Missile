@@ -501,6 +501,29 @@ var utils = {
 		return out;
 	},
 
+	crossVector: function(u, v){
+		/* cross product of vectors [u] and  [v] */
+
+		var out = [u[1]*v[2]-u[2]*v[1], u[2]*v[0]-u[0]*v[2], u[0]*v[1]-u[1]*v[0]];
+
+		return out;
+	},
+	normalizeVector3: function(v){
+		/* normalize vector  [v] */
+		var len = Math.sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
+		var out = [v[0]/len, v[1]/len, v[2]/len];
+
+		return out;
+	},
+	subtractVector3: function(u, v){
+		/* subtract vector [v] from vector [u] */
+		let result = [];
+		for (let i = 0; i < 3; i++) {
+			result.push(u[i] - v[i]);
+		}
+		return result;
+	},
+
 	//*** MODEL MATRIX OPERATIONS
 
 

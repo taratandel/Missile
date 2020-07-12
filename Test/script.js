@@ -10,8 +10,11 @@ var vaos = [];
 var textures = [];
 
 
-var cx = 0.0, cy = 0.0, cz = 6.0;
+var cx = 0.0, cy = 0.0, cz = 5.0;
 var elev = 0.0, ang = 0.0;
+var lookRadius = 10.0;
+
+
 
 var missile = {
     objPath: 'Models/Missile2/R73-Ready.obj',
@@ -29,7 +32,68 @@ var landscape = {
     texture: null,
 };
 
+// missile position
+var ax = 0.0, ay = 0.0, az = 4.5;
 
+var alpha = 0.0, beta = 0.0, r = Math.abs(cz - az) , minR = 0.5;
+
+// event handler
+var mouseState = false;
+var lastMouseX = -100, lastMouseY = -100;
+function doMouseDown(event) {
+    lastMouseX = event.pageX;
+    lastMouseY = event.pageY;
+    mouseState = true;
+}
+function doMouseUp(event) {
+    lastMouseX = -100;
+    lastMouseY = -100;
+    mouseState = false;
+}
+function doMouseMove(event) {
+    if(mouseState) {
+        var dx = event.pageX - lastMouseX;
+        var dy = lastMouseY - event.pageY;
+        lastMouseX = event.pageX;
+        lastMouseY = event.pageY;
+
+        if((dx != 0) || (dy != 0)) {
+            // ang = ang + 0.5 * dx;
+            // elev = elev + 0.5 * dy;
+
+            alpha = alpha + 0.5 * dx;
+            beta = beta + 0.5 * dy;
+        }
+    }
+}
+function doMouseWheel(event) {
+    var nLookRadius = lookRadius + event.wheelDelta/1000.0;
+    if((nLookRadius > 2.0) && (nLookRadius < 20.0)) {
+        lookRadius = nLookRadius;
+    }
+}
+
+
+function createViewMatrix(objPosition,camPosition, uy) {
+    let c = camPosition;
+    let a = objPosition;
+    let u = [0, uy, 0];
+
+    let vzn = utils.subtractVector3(c,a);
+    vzn = utils.normalizeVector3(vzn);
+
+    let vxn = utils.crossVector(u, vzn);
+    vxn = utils.normalizeVector3(vxn);
+
+    let vy = utils.crossVector(vzn, vxn);
+
+    var Mc = [vxn[0], vy[0], vzn[0], c[0],
+        vxn[1], vy[1], vzn[1], c[1],
+        vxn[2], vy[2], vzn[2], c[2],
+        0,     0,     0,     1];
+
+    return utils.invertMatrix(Mc);
+}
 // var mousePressed = false;
 // var client = {x:0, y:0};
 // function mouseSetup(canvas) {
@@ -182,10 +246,27 @@ function main() {
             }
 
             if (i === 0) {
-                worldMatrix = missile.worldMatrix;
+                // worldMatrix = missile.worldMatrix;
+                worldMatrix = utils.MakeWorld(ax, ay, az, 0.0, -90.0, 0.0, 0.05);
+
+                // spring-camera system
+                // target coordinates
+                // var nC = utils.multiplyMatrixVector(worldMatrix, [0, -5, -10, 1]);
+                // // distance from target
+                // console.log(nC)
+
             }
 
-            var viewMatrix = utils.MakeView(cx, cy, cz, elev, ang);
+            cx = ax + r * Math.sin(utils.degToRad(alpha)) * Math.cos(utils.degToRad(beta));
+            cz = az + r * Math.cos(utils.degToRad(alpha)) * Math.cos(utils.degToRad(beta));
+            cy = ay + r * Math.sin(utils.degToRad(beta));
+            var uy = 1;
+            if(Math.cos(utils.degToRad(beta)) < 0) {
+                uy = -1;
+            }
+
+            // var viewMatrix = utils.MakeView(cx, cy, cz, elev, ang);
+            var viewMatrix = createViewMatrix([ax, ay, az], [cx, cy, cz], uy);
 
 
             var viewWorldMatrix = utils.multiplyMatrices(viewMatrix, worldMatrix);
@@ -227,6 +308,11 @@ async function init() {
     shaderDir = baseDir + "shaders/";
 
     var canvas = document.getElementById("my-canvas");
+    canvas.addEventListener("mousedown", doMouseDown, false);
+    canvas.addEventListener("mouseup", doMouseUp, false);
+    canvas.addEventListener("mousemove", doMouseMove, false);
+    canvas.addEventListener("mousewheel", doMouseWheel, false);
+
     gl = canvas.getContext("webgl2");
     if (!gl) {
         document.write("GL context not opened");
@@ -251,34 +337,39 @@ async function init() {
     //###################################################################################
 
     main();
-
-    mouseSetup(canvas);
 }
 
 window.onload = init;
 
 document.onkeypress = function (e) {
 
+    console.log(e.key);
     switch (e.key) {
         case 'a': case 'A':
-            cx -= 0.05;
+            // cx -= 0.01;
+            ax -= 0.01;
             break;
         case 'd': case 'D':
-            cx += 0.05;
+            // cx += 0.01;
+            ax += 0.01;
             break;
 
         case 'e': case 'E':
-            cy -= 0.05;
+            // cy -= 0.01;
+            ay -= 0.01;
             break;
         case 'q': case 'Q':
-            cy += 0.05;
+            // cy += 0.01;
+            ay += 0.01;
             break;
 
         case 'w': case 'W':
-            cz -= 0.05;
+            // cz -= 0.01;
+            az -= 0.01;
             break;
         case 's': case 'S':
-            cz += 0.05;
+            // cz += 0.01;
+            az += 0.01;
             break;
 
         case 'r': case 'R':
@@ -294,6 +385,16 @@ document.onkeypress = function (e) {
         case 'x': case 'X':
             elev += 1.5;
             break;
+
+        case '+':
+            r -= 0.1;
+            if(r < minR) {
+                r += 0.1
+            }
+            break;
+        case '-':
+            r += 0.1;
+            break
     }
 
 };
