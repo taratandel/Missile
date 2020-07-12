@@ -100,7 +100,7 @@ function main() {
 
 
     var perspectiveMatrix = utils.MakePerspective(70, gl.canvas.width / gl.canvas.height, 0.1, 100.0);
-
+    gl.enable(gl.DEPTH_TEST)
 
     // bind missile to its array
     vaos[0] = gl.createVertexArray();
