@@ -1,8 +1,7 @@
 #version 300 es
-
 precision mediump float;
 
-in vec3 fs_pos;
+//in vec3 fs_pos;
 in vec3 fs_norm;
 in vec2 fs_uv;
 

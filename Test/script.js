@@ -15,7 +15,6 @@ var elev = 0.0, ang = 0.0;
 var lookRadius = 10.0;
 
 
-
 var missile = {
     objPath: 'Models/Missile2/R73-Ready.obj',
     texturePath: 'Models/Missile2/R73_Texture.png',
@@ -32,42 +31,49 @@ var landscape = {
     texture: null,
 };
 
-var directionalLightColor = [0.4, 0.3, 0.10];
+// var directionalLightColor = [0.4, 0.3, 0.10];
+var directionalLightColor = [0.0, 0.0, 0.0];
 
 var dirLightAlpha = -utils.degToRad(60);
-var dirLightBeta  = -utils.degToRad(120);
+var dirLightBeta = -utils.degToRad(120);
 // modify the light direction
 var directionalLight = [Math.cos(dirLightAlpha) * Math.cos(dirLightBeta),
     Math.sin(dirLightAlpha),
     Math.cos(dirLightAlpha) * Math.sin(dirLightBeta)
 ];
 
+// var directionalLight = [0,0,-1,0];
+
 // missile position
 var ax = 0.0, ay = 0.0, az = 4.5;
+var cax = ax, cay = ay, caz = az;
 
-var alpha = 0.0, beta = 0.0, r = Math.abs(cz - az) , minR = 0.5;
+var alpha = 0.0, beta = 0.0, r = Math.abs(cz - az), minR = 0.5;
 
 // event handler
 var mouseState = false;
 var lastMouseX = -100, lastMouseY = -100;
+
 function doMouseDown(event) {
     lastMouseX = event.pageX;
     lastMouseY = event.pageY;
     mouseState = true;
 }
+
 function doMouseUp(event) {
     lastMouseX = -100;
     lastMouseY = -100;
     mouseState = false;
 }
+
 function doMouseMove(event) {
-    if(mouseState) {
+    if (mouseState) {
         var dx = event.pageX - lastMouseX;
         var dy = lastMouseY - event.pageY;
         lastMouseX = event.pageX;
         lastMouseY = event.pageY;
 
-        if((dx != 0) || (dy != 0)) {
+        if ((dx != 0) || (dy != 0)) {
             // ang = ang + 0.5 * dx;
             // elev = elev + 0.5 * dy;
 
@@ -76,20 +82,21 @@ function doMouseMove(event) {
         }
     }
 }
+
 function doMouseWheel(event) {
-    var nLookRadius = lookRadius + event.wheelDelta/1000.0;
-    if((nLookRadius > 2.0) && (nLookRadius < 20.0)) {
+    var nLookRadius = lookRadius + event.wheelDelta / 1000.0;
+    if ((nLookRadius > 2.0) && (nLookRadius < 20.0)) {
         lookRadius = nLookRadius;
     }
 }
 
 
-function createViewMatrix(objPosition,camPosition, uy) {
+function createViewMatrix(objPosition, camPosition, uy) {
     let c = camPosition;
     let a = objPosition;
     let u = [0, uy, 0];
 
-    let vzn = utils.subtractVector3(c,a);
+    let vzn = utils.subtractVector3(c, a);
     vzn = utils.normalizeVector3(vzn);
 
     let vxn = utils.crossVector(u, vzn);
@@ -100,10 +107,11 @@ function createViewMatrix(objPosition,camPosition, uy) {
     var Mc = [vxn[0], vy[0], vzn[0], c[0],
         vxn[1], vy[1], vzn[1], c[1],
         vxn[2], vy[2], vzn[2], c[2],
-        0,     0,     0,     1];
+        0, 0, 0, 1];
 
     return utils.invertMatrix(Mc);
 }
+
 // var mousePressed = false;
 // var client = {x:0, y:0};
 // function mouseSetup(canvas) {
@@ -188,7 +196,7 @@ function main() {
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(missile.obj.getIndices()), gl.STATIC_DRAW);
 
-    var normalBuffer = gl.createBuffer()
+    var normalBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(missile.obj.getVertexNormals()), gl.STATIC_DRAW);
     gl.enableVertexAttribArray(norm);
@@ -229,7 +237,7 @@ function main() {
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(landscape.obj.getIndices()), gl.STATIC_DRAW);
 
-    var normalBuffer = gl.createBuffer()
+    var normalBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(landscape.obj.getVertexNormals()), gl.STATIC_DRAW);
     gl.enableVertexAttribArray(norm);
@@ -249,23 +257,27 @@ function main() {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         gl.generateMipmap(gl.TEXTURE_2D);
     };
-
+    var animationIndex = 0;
     drawScene();
+
 
     function animate() {
         var currentTime = (new Date).getTime();
-        var animationFrames = calculateCirclePoints(landscape.worldMatrix[0], landscape.worldMatrix[1], -90,90,1,180)
-        if (i == animationFrames.length) {
-            i = 0
+        var animationFrames = calculateCirclePoints(landscape.worldMatrix[0], landscape.worldMatrix[1], -90, 90, 1, 180)
+        animationIndex = animationIndex + 1;
+        if (animationIndex === animationFrames.length) {
+            animationIndex = 0
         }
-        i = i + 1;
 
         var deltaC = (30 * (currentTime - lastUpdateTime)) / 1000.0;
-            ax += animationFrames[i][0];
-            ay -= animationFrames[i][1];
-            az += 0;
+        ax += 0.0;
+        ay -= animationFrames[animationIndex][1] / 100.0;
+        az -= animationFrames[animationIndex][0] / 100.0;
 
-        worldMatrix = utils.MakeWorld(ax, ay, az, 0, -90, 0, S);
+        console.log(animationIndex , ax, ay, az);
+        // console.log(animationFrames);
+
+        // worldMatrix = utils.MakeWorld(ax, ay, az, 0, -90, 0, S);
         lastUpdateTime = currentTime;
     }
 
@@ -295,7 +307,7 @@ function main() {
             cz = az + r * Math.cos(utils.degToRad(alpha)) * Math.cos(utils.degToRad(beta));
             cy = ay + r * Math.sin(utils.degToRad(beta));
             var uy = 1;
-            if(Math.cos(utils.degToRad(beta)) < 0) {
+            if (Math.cos(utils.degToRad(beta)) < 0) {
                 uy = -1;
             }
 
@@ -316,14 +328,14 @@ function main() {
             //     gl.uniform1i(textLocation, textures[1]);
             // }
 
-            var normalMatrix =  utils.invertMatrix(utils.transposeMatrix(viewWorldMatrix));
+            var normalMatrix = utils.invertMatrix(utils.transposeMatrix(viewWorldMatrix));
             // here when we are creating the matrix location we should consider animation
             // gl.uniform4f(program.lightDir, gLightDir[0], gLightDir[1], gLightDir[2], 1.0);
             // gl.uniform3fv(materialDiffColorHandle, cubeMaterialColor);
             var lightDirMatrix = utils.invertMatrix(utils.transposeMatrix(viewMatrix));//viewMatrix;
-            var lightDirectionTransformed = utils.multiplyMatrix3Vector3(utils.sub3x3from4x4(lightDirMatrix),directionalLight);
-            gl.uniform3fv(lightColorHandle,  directionalLightColor);
-            gl.uniform3fv(lightDirectionHandle,  lightDirectionTransformed);
+            var lightDirectionTransformed = utils.multiplyMatrix3Vector3(utils.sub3x3from4x4(lightDirMatrix), directionalLight);
+            gl.uniform3fv(lightColorHandle, directionalLightColor);
+            gl.uniform3fv(lightDirectionHandle, lightDirectionTransformed);
 
             gl.uniformMatrix4fv(normalMatrixPositionHandle, gl.FALSE, utils.transposeMatrix(normalMatrix));
 
@@ -390,50 +402,60 @@ document.onkeypress = function (e) {
 
     console.log(e.key);
     switch (e.key) {
-        case 'a': case 'A':
+        case 'a':
+        case 'A':
             // cx -= 0.01;
             ax -= 0.01;
             break;
-        case 'd': case 'D':
+        case 'd':
+        case 'D':
             // cx += 0.01;
             ax += 0.01;
             break;
 
-        case 'e': case 'E':
+        case 'e':
+        case 'E':
             // cy -= 0.01;
             ay -= 0.01;
             break;
-        case 'q': case 'Q':
+        case 'q':
+        case 'Q':
             // cy += 0.01;
             ay += 0.01;
             break;
 
-        case 'w': case 'W':
+        case 'w':
+        case 'W':
             // cz -= 0.01;
             az -= 0.01;
             break;
-        case 's': case 'S':
+        case 's':
+        case 'S':
             // cz += 0.01;
             az += 0.01;
             break;
 
-        case 'r': case 'R':
+        case 'r':
+        case 'R':
             ang -= 1.5;
             break;
-        case 't': case 'T':
+        case 't':
+        case 'T':
             ang += 1.5;
             break;
 
-        case 'z': case 'Z':
+        case 'z':
+        case 'Z':
             elev -= 1.5;
             break;
-        case 'x': case 'X':
+        case 'x':
+        case 'X':
             elev += 1.5;
             break;
 
         case '+':
             r -= 0.1;
-            if(r < minR) {
+            if (r < minR) {
                 r += 0.1
             }
             break;
@@ -443,22 +465,23 @@ document.onkeypress = function (e) {
     }
 
 };
+
 function calculateCirclePoints(centerX, centerY, from_degree, to_degree, radius, polynom_aprrox) {
     let total_degree = to_degree - from_degree;
     let coordinates = [];
     // calculation based on the poly nom approximation
-    for(i = 0; i<polynom_aprrox - 1; i++) {
+    for (i = 0; i < polynom_aprrox - 1; i++) {
         // calculate the degree between two points to connects
-        let circle_degree1 = from_degree + i*total_degree/polynom_aprrox
+        let circle_degree1 = from_degree + i * total_degree / polynom_aprrox
         // let circle_degree2 = from_degree + (i+1)*total_degree/polynom_aprrox
         // the coordinate of the first points
-        var x1 = radius * Math.cos(circle_degree1 * Math.PI / 180);
-        var y1 = radius * Math.sin(circle_degree1 * Math.PI / 180);
+        var x1 = radius * Math.cos(utils.degToRad(circle_degree1));
+        var y1 = radius * Math.sin(utils.degToRad(circle_degree1));
         // the coordinates of the second point
         // var x2 = radius * Math.cos(circle_degree2 * Math.PI / 180);
         // var y2 = radius * Math.sin(circle_degree2 * Math.PI / 180);
         // draw a line between the two points
-        coordinates.push([x1,y1]);
+        coordinates.push([x1, y1]);
     }
     return coordinates
 }
