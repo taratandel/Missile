@@ -274,7 +274,7 @@ function main() {
         ay -= animationFrames[animationIndex][1] / 100.0;
         az -= animationFrames[animationIndex][0] / 100.0;
 
-        console.log(animationIndex , ax, ay, az);
+        // console.log(animationIndex , ax, ay, az);
         // console.log(animationFrames);
 
         // worldMatrix = utils.MakeWorld(ax, ay, az, 0, -90, 0, S);
@@ -345,9 +345,11 @@ function main() {
 
             gl.bindVertexArray(vaos[i]);
             if (i === 0) {
+                // console.log("missile", missile.obj.getIndices().length / 3)
                 gl.drawElements(gl.TRIANGLES, missile.obj.getIndices().length, gl.UNSIGNED_SHORT, 0);
             }
             if (i === 1) {
+                // console.log("landscape", landscape.obj.getIndices().length / 3)
                 gl.drawElements(gl.TRIANGLES, landscape.obj.getIndices().length, gl.UNSIGNED_SHORT, 0);
             }
 
@@ -400,7 +402,7 @@ window.onload = init;
 
 document.onkeypress = function (e) {
 
-    console.log(e.key);
+    // console.log(e.key);
     switch (e.key) {
         case 'a':
         case 'A':
