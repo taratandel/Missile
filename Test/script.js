@@ -14,7 +14,7 @@ var cx = 0.0, cy = 0.0, cz = 5.0;
 var elev = 0.0, ang = 0.0;
 var lookRadius = 10.0;
 
-
+var rx = 0.0, ry = -90, rz = 0.0;
 var missile = {
     objPath: 'Models/Missile2/R73-Ready.obj',
     texturePath: 'Models/Missile2/R73_Texture.png',
@@ -42,6 +42,7 @@ var directionalLight = [Math.cos(dirLightAlpha) * Math.cos(dirLightBeta),
     Math.cos(dirLightAlpha) * Math.sin(dirLightBeta)
 ];
 
+var animationFrames;
 // var directionalLight = [0,0,-1,0];
 
 // missile position
@@ -263,17 +264,26 @@ function main() {
 
     function animate() {
         var currentTime = (new Date).getTime();
-        var animationFrames = calculateCirclePoints(landscape.worldMatrix[0], landscape.worldMatrix[1], -90, 90, 1, 180)
-        animationIndex = animationIndex + 1;
-        if (animationIndex === animationFrames.length) {
-            animationIndex = 0
+
+        if (!animationFrames){
+            return;
         }
+        var deltaC = (30 * (currentTime - lastUpdateTime))/1000;
+        if (animationFrames.length != 0 && deltaC > .5){
+            animationIndex = animationIndex + 1;
+            var a = 10;
 
-        var deltaC = (30 * (currentTime - lastUpdateTime)) / 1000.0;
+            if (animationIndex === animationFrames.length) {
+                animationIndex = 0
+                a = a * -1;
+            }
         ax += 0.0;
-        ay -= animationFrames[animationIndex][1] / 100.0;
-        az -= animationFrames[animationIndex][0] / 100.0;
-
+        ay += animationFrames[animationIndex][1];
+        az += animationFrames[animationIndex][0];
+        rx += a;
+        ry += a;
+        rz += a;
+        }
         // console.log(animationIndex , ax, ay, az);
         // console.log(animationFrames);
 
@@ -293,7 +303,7 @@ function main() {
 
             if (i === 0) {
                 // worldMatrix = missile.worldMatrix;
-                worldMatrix = utils.MakeWorld(ax, ay, az, 0.0, -90.0, 0.0, 0.05);
+                worldMatrix = utils.MakeWorld(ax, ay, az, rx, ry, rz, 0.05);
 
                 // spring-camera system
                 // target coordinates
@@ -487,3 +497,34 @@ function calculateCirclePoints(centerX, centerY, from_degree, to_degree, radius,
     }
     return coordinates
 }
+let mouseClickCounter = 1
+let firstx;
+let firsty;
+let secondx;
+let secondy;
+function calculateLuanchPoints() {
+    let centerx = (ax - secondx)/2
+    let centery = (ay - secondy)/2
+    return calculateCirclePoints(centerx, centery, -90, 90, centerx, 180)
+
+}
+function get_points(x,y) {
+
+    if (mouseClickCounter%2 != 0) {
+        ax = x/ gl.canvas.width;
+        ay = y/ gl.canvas.height;
+        animationFrames = []
+    }
+    else {
+        secondx = x/gl.canvas.width;
+        secondy = y/gl.canvas.height;
+        animationFrames = calculateLuanchPoints()
+    }
+    mouseClickCounter += 1;
+}
+
+function printMousePos(event) {
+    get_points(event.x, event.y)
+}
+
+document.addEventListener("click", printMousePos);
