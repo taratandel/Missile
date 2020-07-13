@@ -284,7 +284,7 @@ function main() {
     function drawScene() {
         animate();
         utils.resizeCanvasToDisplaySize(gl.canvas);
-        gl.clearColor(0.85, 0.85, 0.85, 1.0);
+        gl.clearColor(36/255, 206/255, 1, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         for (let i = 0; i < 2; i++) {
             if (i === 1) {
