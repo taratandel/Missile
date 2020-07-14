@@ -2,19 +2,16 @@ var program;
 var gl;
 var shaderDir;
 var baseDir;
-var pigModel;
-// var modelStr = ;
-// var modelTexture = ;
 
 var vaos = [];
 var textures = [];
 
 var i = 0;
-var cx = 0.0, cy = 0.0, cz = 5.0;
+var cx = 0.0, cy = 0.0, cz = 4.5;
 var elev = 0.0, ang = 0.0;
 var lookRadius = 10.0;
 
-var rx = 0.0, ry = -90, rz = 0.0;
+var rx = 0.0, ry = -90.0, rz = 0.0;
 var missile = {
     objPath: 'Models/Missile2/R73-Ready.obj',
     texturePath: 'Models/Missile2/R73_Texture.png',
@@ -31,8 +28,8 @@ var landscape = {
     texture: null,
 };
 
-// var directionalLightColor = [0.4, 0.3, 0.10];
-var directionalLightColor = [0.0, 0.0, 0.0];
+var directionalLightColor = [0.1, 0.1, 0.10];
+// var directionalLightColor = [0.0, 0.0, 0.0];
 
 var dirLightAlpha = -utils.degToRad(60);
 var dirLightBeta = -utils.degToRad(120);
@@ -46,7 +43,7 @@ var animationFrames;
 // var directionalLight = [0,0,-1,0];
 
 // missile position
-var ax = 0.0, ay = 0.0, az = 4.5;
+var ax = 5.0, ay = 0.0, az = 5.0;
 var cax = ax, cay = ay, caz = az;
 
 var alpha = 0.0, beta = 0.0, r = Math.abs(cz - az), minR = 0.5;
@@ -261,28 +258,35 @@ function main() {
     var animationIndex = 0;
     drawScene();
 
+    var frames = parabolicPathCalculator([ax, ay, az], [0.0, 0.0, -5.0], 10, 200);
+
 
     function animate() {
         var currentTime = (new Date).getTime();
 
-        if (!animationFrames){
+        if (!frames) {
             return;
         }
-        var deltaC = (30 * (currentTime - lastUpdateTime))/1000;
-        if (animationFrames.length != 0 && deltaC > .5){
-            animationIndex = animationIndex + 1;
-            var a = 10;
+        var deltaC = (30 * (currentTime - lastUpdateTime)) / 1000;
+        if (/*animationFrames.length != 0 &&*/ frames.length > 0 && deltaC > .5) {
+            animationIndex = (animationIndex + 1) % frames.length;
+            // if (animationIndex >= frames.length) {
+            //     animationIndex = frames.length - 1;
+            // }
+            // console.log(animationIndex)
 
-            if (animationIndex === animationFrames.length) {
-                animationIndex = 0
-                a = a * -1;
-            }
-        ax += 0.0;
-        ay += animationFrames[animationIndex][1];
-        az += animationFrames[animationIndex][0];
-        rx += a;
-        ry += a;
-        rz += a;
+            //     var a = 10;
+            //
+            //     if (animationIndex === animationFrames.length) {
+            //         animationIndex = 0
+            //         a = a * -1;
+            //     }
+            // ax += 0.0;
+            // ay += animationFrames[animationIndex][1];
+            // az += animationFrames[animationIndex][0];
+            // rx += a;
+            // ry += a;
+            // rz += a;
         }
         // console.log(animationIndex , ax, ay, az);
         // console.log(animationFrames);
@@ -293,8 +297,9 @@ function main() {
 
     function drawScene() {
         animate();
+
         utils.resizeCanvasToDisplaySize(gl.canvas);
-        gl.clearColor(36/255, 206/255, 1, 1.0);
+        gl.clearColor(36 / 255, 206 / 255, 1, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         for (let i = 0; i < 2; i++) {
             if (i === 1) {
@@ -303,7 +308,17 @@ function main() {
 
             if (i === 0) {
                 // worldMatrix = missile.worldMatrix;
-                worldMatrix = utils.MakeWorld(ax, ay, az, rx, ry, rz, 0.05);
+                // worldMatrix = utils.MakeWorld(ax, ay, az, rx, ry, rz, 0.05);
+                if (frames && frames.length > 0) {
+                    worldMatrix = frames[animationIndex][0];
+                    ax = frames[animationIndex][1][0];
+                    ay = frames[animationIndex][1][1];
+                    az = frames[animationIndex][1][2];
+                    // console.log(frames[animationIndex].x)
+                } else {
+                    worldMatrix = utils.MakeWorld(ax, ay, az, rx, ry, rz, 0.05);
+                }
+
 
                 // spring-camera system
                 // target coordinates
@@ -497,27 +512,29 @@ function calculateCirclePoints(centerX, centerY, from_degree, to_degree, radius,
     }
     return coordinates
 }
-let mouseClickCounter = 1
+
+let mouseClickCounter = 1;
 let firstx;
 let firsty;
 let secondx;
 let secondy;
+
 function calculateLuanchPoints() {
-    let centerx = (ax - secondx)/2
-    let centery = (ay - secondy)/2
-    return calculateCirclePoints(centerx, centery, -90, 90, centerx, 180)
+    let centerx = (ax - secondx) / 2;
+    let centery = (ay - secondy) / 2;
+    return calculateCirclePoints(centerx, centery, -90, 90, centerx, 180);
 
 }
-function get_points(x,y) {
 
-    if (mouseClickCounter%2 != 0) {
-        ax = x/ gl.canvas.width;
-        ay = y/ gl.canvas.height;
+function get_points(x, y) {
+
+    if (mouseClickCounter % 2 != 0) {
+        ax = x / gl.canvas.width;
+        ay = y / gl.canvas.height;
         animationFrames = []
-    }
-    else {
-        secondx = x/gl.canvas.width;
-        secondy = y/gl.canvas.height;
+    } else {
+        secondx = x / gl.canvas.width;
+        secondy = y / gl.canvas.height;
         animationFrames = calculateLuanchPoints()
     }
     mouseClickCounter += 1;
@@ -527,4 +544,204 @@ function printMousePos(event) {
     get_points(event.x, event.y)
 }
 
+/**
+ *
+ * @param start point [x,y,z]
+ * @param end point [x,y,z]
+ * @param duration total animation duration
+ * @param steps how many point we must calculate
+ * @param g the gravity
+ * @param s scale
+ */
+function parabolicPathCalculator(start, end, duration, steps, s = 0.05, g = 1.0) {
+    let mid = [(start[0] + end[0]) / 2.0, 20, (start[0] + end[0]) / 2.0];
+    let p1 = [start[0], start[1] + 20, start[2]];
+    let p2 = [end[0], start[1] + 20, end[2]];
+    let path = [];
+
+
+    let q1 = null;
+    let q2 = null;
+    let q3 = null;
+
+    let pitch = 0.0;
+
+    if(start[2] >= end[2]) {
+        if(start[0] === end[0]) {
+            pitch = 180.0;
+        }else {
+            pitch = 180 + utils.radToDeg(Math.atan((start[0] - end[0]) / (start[2] - end[2])));
+        }
+    } else {
+        pitch = utils.radToDeg(Math.atan((start[0] - end[0]) / (start[2] - end[2])));
+
+    }
+
+    // if(start[0] === end[0]) {
+    //     pitch = 0.0;
+    //     if(start[2] === end[2]) {
+    //         pitch = 180.0;
+    //     }
+    // } else {
+    //     pitch = -utils.radToDeg(Math.atan((start[0] - end[0]) / (start[2] - end[2])));
+    //     if(start[0] === end[0]) {
+    //         pitch = 180.0
+    //     }
+    //
+    // }
+
+console.log(pitch);
+    q1 = createQuaternionFromYPR(90.0, pitch, 0.0);
+    q2 = createQuaternionFromYPR(0.0, pitch, 0.0);
+    q3 = createQuaternionFromYPR(-90.0, pitch, 0.0);
+    // if (start[0] === end[0]) {
+    //     if (start[2] >= end[2]) {
+    //         q1 = Quaternion.fromEuler(0.0, utils.degToRad(-90), 0);
+    //         q2 = Quaternion.fromEuler(0.0, utils.degToRad(-180), 0);
+    //         q3 = Quaternion.fromEuler(0.0, utils.degToRad(90), 0);
+    //     } else {
+    //         q1 = Quaternion.fromEuler(0.0, utils.degToRad(-90), 0);
+    //         q2 = Quaternion.fromEuler(0.0, utils.degToRad(0), 0);
+    //         q3 = Quaternion.fromEuler(0.0, utils.degToRad(90), 0);
+    //     }
+    // } else if (start[2] === end[2]) {
+    //     if (start[0] > end[0]) {
+    //         q1 = Quaternion.fromEuler(utils.degToRad(90), utils.degToRad(-90), utils.degToRad(90));
+    //         q2 = Quaternion.fromEuler(utils.degToRad(90), utils.degToRad(-180), utils.degToRad(90));
+    //         q3 = Quaternion.fromEuler(utils.degToRad(90), utils.degToRad(90), utils.degToRad(90));
+    //     } else {
+    //         q1 = Quaternion.fromEuler(0.0, utils.degToRad(-90), 0);
+    //         q2 = Quaternion.fromEuler(0.0, utils.degToRad(0), 0);
+    //         q3 = Quaternion.fromEuler(0.0, utils.degToRad(90), 0);
+    //     }
+    //
+    // } else {
+    //     q1 = Quaternion.fromEuler(0.0, utils.degToRad(-90), 0);
+    //     q2 = Quaternion.fromEuler(0.0, utils.degToRad(-180), 0);
+    //     q3 = Quaternion.fromEuler(0.0, utils.degToRad(90), 0);
+    // }
+
+
+    // if(end[2] >= start[2]) {
+    //     xxx = 0;
+    //     ttt = -ttt;
+    // }
+    // console.log(xxx)
+    // for (let i= 0; i< 20; i++) {
+    //     path.push([utils.MakeWorld(start[0],start[1] + i + 1,start[2],0,-90,0, s), [start[0],start[1] + i + 1,start[2]]])
+    // }
+
+    // let q1 = Quaternion.fromAxisAngle([1,0,0], utils.degToRad(-90))
+    // let q2 = Quaternion.fromAxisAngle([1,0,0], utils.degToRad(-180))
+    // let q3 = Quaternion.fromAxisAngle([1,0,0], utils.degToRad(90))
+
+    // Quaternion.fromEuler(Φ, θ, ψ[, order="ZXY"])
+    // let q1 = Quaternion.fromEuler(utils.degToRad(0), utils.degToRad(-90), 0);
+    // let q2 = Quaternion.fromEuler(utils.degToRad(0), utils.degToRad(teta), -phsi);
+    // let q3 = Quaternion.fromEuler(utils.degToRad(0), utils.degToRad(90), 0);
+    // let q4 = Quaternion.fromEuler(utils.degToRad(0),utils.degToRad(90),utils.degToRad(0));
+
+
+    for (i = 0; i <= steps; i++) {
+        let alp = i * 1.0 / steps;
+        let q12 = q1.slerp(q2)(alp);
+        let q23 = q2.slerp(q3)(alp);
+        // let q34 = q3.slerp(q4)(alp);
+
+        let q123 = q12.slerp(q23)(alp);
+        // let q234 = q23.slerp(q34)(alp);
+
+        // let q1234 = q123.slerp(q234)(alp);
+
+        let MR = q123.toMatrix4();
+        // let MR = q1234.toMatrix4();
+
+
+        let uma = 1.0 - alp;
+        let c0 = uma * uma;
+        let c1 = uma * alp;
+        let c2 = alp * alp;
+        // let c3 = alp * alp * alp;
+
+        // let translate = [
+        //     start[0] * c0 + p1[0] * c1 + p2[0] * c2 + end[0] * c3,
+        //     start[1] * c0 + p1[1] * c1 + p2[1] * c2 + end[1] * c3,
+        //     start[2] * c0 + p1[2] * c1 + p2[2] * c2 + end[2] * c3,
+        // ]
+
+        let translate = [
+            start[0] * c0 + mid[0] * c1 + end[0] * c2,
+            start[1] * c0 + mid[1] * c1 + end[1] * c2,
+            start[2] * c0 + mid[2] * c1 + end[2] * c2,
+        ]
+
+        let MT = utils.MakeTranslateMatrix(
+            start[0] * c0 + mid[0] * c1 + end[0] * c2,
+            start[1] * c0 + mid[1] * c1 + end[1] * c2,
+            start[2] * c0 + mid[2] * c1 + end[2] * c2,
+        );
+
+        // console.log(q123);
+
+        // console.log(MT)
+
+        path.push([utils.multiplyMatrices(utils.multiplyMatrices(MT, MR), utils.MakeScaleMatrix(s)), translate])
+    }
+
+    // for (let i= 0; i<20; i++) {
+    //     path.push([utils.MakeWorld(end[0],p2[1] - (i +1),end[2],0,90,0, s), [end[0],p2[1] -(i+1),end[2]]])
+    // }
+
+    return path
+
+    // let deltaT = duration * 1.0 / steps; // diff time between each step
+    // let vy = (duration / 2.0) * g * s; // speed in y-axis (height)
+    // let vx = (end[0] - start[0]) * s / duration;  // speed in x-axis
+    // let vz = (end[2] - start[2]) * s / duration;  // speed in z-axis
+
+    // let q1 = Quaternion.fromAxisAngle([0,1,0], utils.degToRad(90));
+    // let q2 = Quaternion.fromAxisAngle([0,1,0], utils.degToRad(90));
+    // console.log(q1)
+    // console.log(q2)
+    // console.log()
+    // var aj = q1.slerp(q2)(0.5).toMatrix4();
+    // console.log(utils.multiplyMatrices(utils.MakeTranslateMatrix(start[0], start), aj))
+
+
+    // console.log(deltaT, vx, vy, vz);
+    //
+    // let path = [];
+    // path.push(start);
+    // for (let i= 1; i <= steps; i++) {
+    //     path[i] = [
+    //         path[i-1][0] + (vx * deltaT) ,
+    //         path[i-1][1] + (vy * deltaT) ,
+    //         path[i-1][2] + (vz * deltaT) ,
+    //     ];
+    //     vy -= g * deltaT * s;
+    //     console.log(vy);
+    // }
+    // path.push(end);
+    // return path;
+}
+
+function createQuaternionFromYPR(yaw, pitch, roll){
+    let yc = Math.cos(utils.degToRad(yaw * 0.5));
+    let ys = Math.sin(utils.degToRad(yaw * 0.5));
+    let pc = Math.cos(utils.degToRad(pitch * 0.5));
+    let ps = Math.sin(utils.degToRad(pitch * 0.5));
+    let rc = Math.cos(utils.degToRad(roll * 0.5));
+    let rs = Math.sin(utils.degToRad(roll * 0.5));
+
+    let qw = rc * pc * yc + rs * ps * ys;
+    let qx = rs * pc * yc - rc * ps * ys;
+    let qy = rc * ps * yc + rs * pc * ys;
+    let qz = rc * pc * ys - rs * ps * yc;
+
+    return  new Quaternion(qx, qy, qz, qw);
+}
+
 document.addEventListener("click", printMousePos);
+
+// temp = parabolicPathCalculator([0,0,0], [10,0,10], 10, 10);
+// console.log(temp);

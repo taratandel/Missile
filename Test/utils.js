@@ -275,6 +275,10 @@ var utils = {
 		return (angle * Math.PI / 180);
 	},
 
+	radToDeg: function (radians) {
+		return radians * 180 / Math.PI;
+	},
+
 	identityMatrix: function () {
 		return [1, 0, 0, 0,
 			0, 1, 0, 0,
