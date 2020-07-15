@@ -66,7 +66,6 @@ function doMouseUp(event) {
 
 function doMouseMove(event) {
     if (mouseState) {
-        mouseState = false
         let dx = event.pageX - lastMouseX;
         let dy = lastMouseY - event.pageY;
         lastMouseX = event.pageX;
@@ -427,7 +426,7 @@ document.onkeypress = function (e) {
  * @param s scale
  */
 function parabolicPathCalculator(start, end, duration, steps, s = 0.05, g = 1.0) {
-    let mid = [(start[0] + end[0]) / 2.0, 20, (start[0] + end[0]) / 2.0];
+    let mid = [(start[0] + end[0]) / 2.0, 20, (start[2] + end[2]) / 2.0];
 
     let path = [];
 
@@ -507,14 +506,14 @@ let should_animate = 1
 function startAnimation(event) {
     let mousePisitionX;
     let mousePisitionY;
-    mousePisitionX = event.pageX / gl.canvas.width;
-    mousePisitionY = event.pageY / gl.canvas.height;
+    mousePisitionX = gl.canvas.width/event.pageX;
+    mousePisitionY = gl.canvas.height/event.pageY;
     if (should_animate == 0) {
-        frames_to_start = parabolicPathCalculator([ax, ay, az], [0.0, mousePisitionX, mousePisitionY], 10, 200);
+        frames_to_start = parabolicPathCalculator([ax, ay, az], [mousePisitionX, ay, mousePisitionY], 10, 200);
     } else if (should_animate == 1){
-        ax = ax;
-        ay = mousePisitionX;
-        az = mousePisitionY;
+        // ax = mousePisitionX;
+        // ay = mousePisitionY;
+        // az = az;
         should_animate = 0
     }
     console.log("mouseclicl")
