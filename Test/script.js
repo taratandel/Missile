@@ -127,7 +127,9 @@ function main() {
     var lightColorHandle = gl.getUniformLocation(program, 'lightColor');
     var normalMatrixPositionHandle = gl.getUniformLocation(program, 'nMatrix');
     var norm = gl.getAttribLocation(program, "in_norm");
-
+    for(var i = 0; i < unifParArray.length; i++) {
+        program[unifParArray[i].pGLSL+"Uniform"] = gl.getUniformLocation(program, unifParArray[i].pGLSL);
+    }
 
     var perspectiveMatrix = utils.MakePerspective(70, gl.canvas.width / gl.canvas.height, 0.1, 100.0);
     gl.enable(gl.DEPTH_TEST)
@@ -229,7 +231,8 @@ function main() {
             should_animate = 2
             animationIndex = (animationIndex + 1) ;
         } else if (animationIndex + 1 == frames.length) {
-            animationIndex = 0
+            should_animate = 1
+            animationIndex = -1
             frames = []
         }
         lastUpdateTime = currentTime;
@@ -248,7 +251,8 @@ function main() {
 
             if (i === 0) {
 
-                if (frames && frames.length > 0) {
+                if (frames && frames.length > 0 && animationIndex + 1 > 0) {
+                    console.log("it's channig the ax")
                     worldMatrix = frames[animationIndex][0];
                     ax = frames[animationIndex][1][0];
                     ay = frames[animationIndex][1][1];
@@ -285,7 +289,9 @@ function main() {
             gl.uniform3fv(lightDirectionHandle, lightDirectionTransformed);
 
             gl.uniformMatrix4fv(normalMatrixPositionHandle, gl.FALSE, utils.transposeMatrix(normalMatrix));
-
+            for(var uniformArrayIndex = 0; uniformArrayIndex < unifParArray.length; uniformArrayIndex++) {
+                unifParArray[uniformArrayIndex].type(gl);
+            }
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, textures[i]);
             gl.uniform1i(textLocation, 0);
@@ -511,10 +517,73 @@ function startAnimation(event) {
     if (should_animate == 0) {
         frames_to_start = parabolicPathCalculator([ax, ay, az], [mousePisitionX, ay, mousePisitionY], 10, 200);
     } else if (should_animate == 1){
-        // ax = mousePisitionX;
-        // ay = mousePisitionY;
-        // az = az;
+        ax = mousePisitionX;
+        ay = mousePisitionY;
+        az = az;
         should_animate = 0
     }
     console.log("mouseclicl")
 }
+
+function unifPar(pHTML, pGLSL, type) {
+    this.pHTML = pHTML;
+    this.pGLSL = pGLSL;
+    this.type = type;
+}
+function valType(gl) {
+    var v = [0,1,0,0];
+    gl.uniform4f(program[this.pGLSL+"Uniform"], v[0], v[1], v[2], v[3]);
+}
+
+function valVec3(gl) {
+    gl.uniform3f(program[this.pGLSL+"Uniform"],
+        6,
+        3,
+        5)
+}
+function valDir(gl) {
+    let t = utils.degToRad(45);
+    let p = utils.degToRad(45);
+    gl.uniform3f(program[this.pGLSL+"Uniform"],Math.sin(t)*Math.sin(p), Math.cos(t), Math.sin(t)*Math.cos(p));
+}
+
+function val(gl) {
+    gl.uniform1f(program[this.pGLSL+"Uniform"], 30);
+}
+
+function valCol(gl) {
+    col = "002200";
+    R = parseInt(col.substring(0,2) ,16) / 255;
+    G = parseInt(col.substring(2,4) ,16) / 255;
+    B = parseInt(col.substring(4,6) ,16) / 255;
+    gl.uniform4f(program[this.pGLSL+"Uniform"], R, G, B, 1);
+}
+
+function valD10(gl) {
+    gl.uniform1f(program[this.pGLSL+"Uniform"], 6.1);
+}
+
+function valD100(gl) {
+    gl.uniform1f(program[this.pGLSL+"Uniform"], .8);
+}
+unifParArray =[
+
+
+    new unifPar("LAlightType","LAlightType", valType),
+    new unifPar("LAPos","LAPos", valVec3),
+    new unifPar("LADir","LADir", valDir),
+    new unifPar("LADecay","LADecay", val),
+    new unifPar("LAlightColor","LAlightColor", valCol),
+
+    new unifPar("LBlightType","LBlightType", valType),
+    new unifPar("LBPos","LBPos", valVec3),
+    new unifPar("LBDir","LBDir", valDir),
+    new unifPar("LBTarget","LBTarget", valD10),
+    new unifPar("LBlightColor","LBlightColor", valCol),
+    new unifPar("ambientLightColor","ambientLightColor", valCol),
+    new unifPar("ambientLightLowColor","ambientLightLowColor", valCol),
+    new unifPar("diffuseColor","diffuseColor", valCol),
+    new unifPar("DTexMix","DTexMix", valD100),
+    new unifPar("specularColor","specularColor", valCol),
+    new unifPar("ambientMatColor","ambientMatColor", valCol),
+];
