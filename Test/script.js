@@ -66,7 +66,6 @@ function doMouseUp(event) {
 
 function doMouseMove(event) {
     if (mouseState) {
-        mouseState = false
         let dx = event.pageX - lastMouseX;
         let dy = lastMouseY - event.pageY;
         lastMouseX = event.pageX;
