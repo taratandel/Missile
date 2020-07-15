@@ -228,6 +228,9 @@ function main() {
         if ( frames.length > 0 && deltaC > .5 && animationIndex + 1 != frames.length) {
             should_animate = 2
             animationIndex = (animationIndex + 1) ;
+        } else if (animationIndex + 1 == frames.length) {
+            animationIndex = 0
+            frames = []
         }
         lastUpdateTime = currentTime;
     }
