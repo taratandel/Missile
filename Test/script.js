@@ -29,7 +29,6 @@ var landscape = {
 };
 
 var directionalLightColor = [0.1, 0.1, 0.10];
-// var directionalLightColor = [0.0, 0.0, 0.0];
 
 var dirLightAlpha = -utils.degToRad(60);
 var dirLightBeta = -utils.degToRad(120);
@@ -39,13 +38,11 @@ var directionalLight = [Math.cos(dirLightAlpha) * Math.cos(dirLightBeta),
     Math.cos(dirLightAlpha) * Math.sin(dirLightBeta)
 ];
 
-var animationFrames;
-// var directionalLight = [0,0,-1,0];
+
 
 // missile position
 var ax = 5.0, ay = 0.0, az = 5.0;
-var cax = ax, cay = ay, caz = az;
-
+var frames, frames_to_start;
 var alpha = 0.0, beta = 0.0, r = Math.abs(cz - az), minR = 0.5;
 
 // event handler
@@ -56,29 +53,31 @@ function doMouseDown(event) {
     lastMouseX = event.pageX;
     lastMouseY = event.pageY;
     mouseState = true;
+    console.log("mousedown")
 }
 
 function doMouseUp(event) {
     lastMouseX = -100;
     lastMouseY = -100;
     mouseState = false;
+    console.log("mouseup")
+
 }
 
 function doMouseMove(event) {
     if (mouseState) {
-        var dx = event.pageX - lastMouseX;
-        var dy = lastMouseY - event.pageY;
+        mouseState = false
+        let dx = event.pageX - lastMouseX;
+        let dy = lastMouseY - event.pageY;
         lastMouseX = event.pageX;
         lastMouseY = event.pageY;
 
         if ((dx != 0) || (dy != 0)) {
-            // ang = ang + 0.5 * dx;
-            // elev = elev + 0.5 * dy;
-
             alpha = alpha + 0.5 * dx;
             beta = beta + 0.5 * dy;
         }
     }
+    console.log("mousemove")
 }
 
 function doMouseWheel(event) {
@@ -110,41 +109,9 @@ function createViewMatrix(objPosition, camPosition, uy) {
     return utils.invertMatrix(Mc);
 }
 
-// var mousePressed = false;
-// var client = {x:0, y:0};
-// function mouseSetup(canvas) {
-//     window.onmousedown = function (e) {
-//         mousePressed = true;
-//         client.x = e.clientX;
-//         client.Y = e.clientY;
-//     };
-//
-//     window.onmousemove = function (e) {
-//         if(mousePressed) {
-//             deltaX =(e.clientX - client.x);
-//             deltaY =(e.clientY - client.y);
-//             ang += (deltaX/10.0);
-//             elev += (deltaY/10.0);
-//
-//             console.log(deltaX, deltaY);
-//             client.x = e.clientX;
-//             client.y = e.clientY;
-//         }
-//     };
-//
-//     window.onmouseup = function (e) {
-//         mousePressed = false;
-//     }
-// }
-
 function main() {
 
     var lastUpdateTime = (new Date).getTime();
-
-    var Rx = 0.0;
-    var Ry = 0.0;
-    var Rz = 0.0;
-    var S = 1.0;
 
     utils.resizeCanvasToDisplaySize(gl.canvas);
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -152,19 +119,11 @@ function main() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.enable(gl.DEPTH_TEST);
 
-    //###################################################################################
-    //Here we extract the position of the vertices, the normals, the indices, and the uv coordinates
-    // var pigVertices = missile.obj.getVertices();
-    // var pigNormals = missile.obj.getVertexNormals();
-    // var pigIndices = missile.obj.getIndices();
-    // var pigTexCoords = missile.obj.getTextureCoord();
-    //###################################################################################
 
     var positionAttributeLocation = gl.getAttribLocation(program, "a_position");
     var uvAttributeLocation = gl.getAttribLocation(program, "a_uv");
     var matrixLocation = gl.getUniformLocation(program, "matrix");
     var textLocation = gl.getUniformLocation(program, "u_texture");
-    // materialDiffColorHandle = gl.getUniformLocation(program, 'mDiffColor');
     var lightDirectionHandle = gl.getUniformLocation(program, 'lightDirection');
     var lightColorHandle = gl.getUniformLocation(program, 'lightColor');
     var normalMatrixPositionHandle = gl.getUniformLocation(program, 'nMatrix');
@@ -258,7 +217,6 @@ function main() {
     var animationIndex = 0;
     drawScene();
 
-    var frames = parabolicPathCalculator([ax, ay, az], [0.0, 0.0, -5.0], 10, 200);
 
 
     function animate() {
@@ -268,30 +226,10 @@ function main() {
             return;
         }
         var deltaC = (30 * (currentTime - lastUpdateTime)) / 1000;
-        if (/*animationFrames.length != 0 &&*/ frames.length > 0 && deltaC > .5) {
-            animationIndex = (animationIndex + 1) % frames.length;
-            // if (animationIndex >= frames.length) {
-            //     animationIndex = frames.length - 1;
-            // }
-            // console.log(animationIndex)
-
-            //     var a = 10;
-            //
-            //     if (animationIndex === animationFrames.length) {
-            //         animationIndex = 0
-            //         a = a * -1;
-            //     }
-            // ax += 0.0;
-            // ay += animationFrames[animationIndex][1];
-            // az += animationFrames[animationIndex][0];
-            // rx += a;
-            // ry += a;
-            // rz += a;
+        if ( frames.length > 0 && deltaC > .5 && animationIndex + 1 != frames.length) {
+            should_animate = 2
+            animationIndex = (animationIndex + 1) ;
         }
-        // console.log(animationIndex , ax, ay, az);
-        // console.log(animationFrames);
-
-        // worldMatrix = utils.MakeWorld(ax, ay, az, 0, -90, 0, S);
         lastUpdateTime = currentTime;
     }
 
@@ -307,8 +245,7 @@ function main() {
             }
 
             if (i === 0) {
-                // worldMatrix = missile.worldMatrix;
-                // worldMatrix = utils.MakeWorld(ax, ay, az, rx, ry, rz, 0.05);
+
                 if (frames && frames.length > 0) {
                     worldMatrix = frames[animationIndex][0];
                     ax = frames[animationIndex][1][0];
@@ -318,13 +255,6 @@ function main() {
                 } else {
                     worldMatrix = utils.MakeWorld(ax, ay, az, rx, ry, rz, 0.05);
                 }
-
-
-                // spring-camera system
-                // target coordinates
-                // var nC = utils.multiplyMatrixVector(worldMatrix, [0, -5, -10, 1]);
-                // // distance from target
-                // console.log(nC)
 
             }
 
@@ -344,19 +274,9 @@ function main() {
             var projectionMatrix = utils.multiplyMatrices(perspectiveMatrix, viewWorldMatrix);
 
             gl.uniformMatrix4fv(matrixLocation, gl.FALSE, utils.transposeMatrix(projectionMatrix));
-            // if(i === 0) {
-            //
-            // }
-            //
-            // if(i === 1) {
-            //     gl.activeTexture(gl.TEXTURE0);
-            //     gl.uniform1i(textLocation, textures[1]);
-            // }
 
             var normalMatrix = utils.invertMatrix(utils.transposeMatrix(viewWorldMatrix));
             // here when we are creating the matrix location we should consider animation
-            // gl.uniform4f(program.lightDir, gLightDir[0], gLightDir[1], gLightDir[2], 1.0);
-            // gl.uniform3fv(materialDiffColorHandle, cubeMaterialColor);
             var lightDirMatrix = utils.invertMatrix(utils.transposeMatrix(viewMatrix));//viewMatrix;
             var lightDirectionTransformed = utils.multiplyMatrix3Vector3(utils.sub3x3from4x4(lightDirMatrix), directionalLight);
             gl.uniform3fv(lightColorHandle, directionalLightColor);
@@ -370,11 +290,9 @@ function main() {
 
             gl.bindVertexArray(vaos[i]);
             if (i === 0) {
-                // console.log("missile", missile.obj.getIndices().length / 3)
                 gl.drawElements(gl.TRIANGLES, missile.obj.getIndices().length, gl.UNSIGNED_SHORT, 0);
             }
             if (i === 1) {
-                // console.log("landscape", landscape.obj.getIndices().length / 3)
                 gl.drawElements(gl.TRIANGLES, landscape.obj.getIndices().length, gl.UNSIGNED_SHORT, 0);
             }
 
@@ -396,6 +314,7 @@ async function init() {
     canvas.addEventListener("mouseup", doMouseUp, false);
     canvas.addEventListener("mousemove", doMouseMove, false);
     canvas.addEventListener("mousewheel", doMouseWheel, false);
+    document.addEventListener("click", startAnimation);
 
     gl = canvas.getContext("webgl2");
     if (!gl) {
@@ -488,61 +407,12 @@ document.onkeypress = function (e) {
             break;
         case '-':
             r += 0.1;
+        case ' ':
+            frames = frames_to_start;
             break
     }
 
 };
-
-function calculateCirclePoints(centerX, centerY, from_degree, to_degree, radius, polynom_aprrox) {
-    let total_degree = to_degree - from_degree;
-    let coordinates = [];
-    // calculation based on the poly nom approximation
-    for (i = 0; i < polynom_aprrox - 1; i++) {
-        // calculate the degree between two points to connects
-        let circle_degree1 = from_degree + i * total_degree / polynom_aprrox
-        // let circle_degree2 = from_degree + (i+1)*total_degree/polynom_aprrox
-        // the coordinate of the first points
-        var x1 = radius * Math.cos(utils.degToRad(circle_degree1));
-        var y1 = radius * Math.sin(utils.degToRad(circle_degree1));
-        // the coordinates of the second point
-        // var x2 = radius * Math.cos(circle_degree2 * Math.PI / 180);
-        // var y2 = radius * Math.sin(circle_degree2 * Math.PI / 180);
-        // draw a line between the two points
-        coordinates.push([x1, y1]);
-    }
-    return coordinates
-}
-
-let mouseClickCounter = 1;
-let firstx;
-let firsty;
-let secondx;
-let secondy;
-
-function calculateLuanchPoints() {
-    let centerx = (ax - secondx) / 2;
-    let centery = (ay - secondy) / 2;
-    return calculateCirclePoints(centerx, centery, -90, 90, centerx, 180);
-
-}
-
-function get_points(x, y) {
-
-    if (mouseClickCounter % 2 != 0) {
-        ax = x / gl.canvas.width;
-        ay = y / gl.canvas.height;
-        animationFrames = []
-    } else {
-        secondx = x / gl.canvas.width;
-        secondy = y / gl.canvas.height;
-        animationFrames = calculateLuanchPoints()
-    }
-    mouseClickCounter += 1;
-}
-
-function printMousePos(event) {
-    get_points(event.x, event.y)
-}
 
 /**
  *
@@ -555,8 +425,7 @@ function printMousePos(event) {
  */
 function parabolicPathCalculator(start, end, duration, steps, s = 0.05, g = 1.0) {
     let mid = [(start[0] + end[0]) / 2.0, 20, (start[0] + end[0]) / 2.0];
-    let p1 = [start[0], start[1] + 20, start[2]];
-    let p2 = [end[0], start[1] + 20, end[2]];
+
     let path = [];
 
 
@@ -577,97 +446,25 @@ function parabolicPathCalculator(start, end, duration, steps, s = 0.05, g = 1.0)
 
     }
 
-    // if(start[0] === end[0]) {
-    //     pitch = 0.0;
-    //     if(start[2] === end[2]) {
-    //         pitch = 180.0;
-    //     }
-    // } else {
-    //     pitch = -utils.radToDeg(Math.atan((start[0] - end[0]) / (start[2] - end[2])));
-    //     if(start[0] === end[0]) {
-    //         pitch = 180.0
-    //     }
-    //
-    // }
-
 console.log(pitch);
     q1 = createQuaternionFromYPR(90.0, pitch, 0.0);
     q2 = createQuaternionFromYPR(0.0, pitch, 0.0);
     q3 = createQuaternionFromYPR(-90.0, pitch, 0.0);
-    // if (start[0] === end[0]) {
-    //     if (start[2] >= end[2]) {
-    //         q1 = Quaternion.fromEuler(0.0, utils.degToRad(-90), 0);
-    //         q2 = Quaternion.fromEuler(0.0, utils.degToRad(-180), 0);
-    //         q3 = Quaternion.fromEuler(0.0, utils.degToRad(90), 0);
-    //     } else {
-    //         q1 = Quaternion.fromEuler(0.0, utils.degToRad(-90), 0);
-    //         q2 = Quaternion.fromEuler(0.0, utils.degToRad(0), 0);
-    //         q3 = Quaternion.fromEuler(0.0, utils.degToRad(90), 0);
-    //     }
-    // } else if (start[2] === end[2]) {
-    //     if (start[0] > end[0]) {
-    //         q1 = Quaternion.fromEuler(utils.degToRad(90), utils.degToRad(-90), utils.degToRad(90));
-    //         q2 = Quaternion.fromEuler(utils.degToRad(90), utils.degToRad(-180), utils.degToRad(90));
-    //         q3 = Quaternion.fromEuler(utils.degToRad(90), utils.degToRad(90), utils.degToRad(90));
-    //     } else {
-    //         q1 = Quaternion.fromEuler(0.0, utils.degToRad(-90), 0);
-    //         q2 = Quaternion.fromEuler(0.0, utils.degToRad(0), 0);
-    //         q3 = Quaternion.fromEuler(0.0, utils.degToRad(90), 0);
-    //     }
-    //
-    // } else {
-    //     q1 = Quaternion.fromEuler(0.0, utils.degToRad(-90), 0);
-    //     q2 = Quaternion.fromEuler(0.0, utils.degToRad(-180), 0);
-    //     q3 = Quaternion.fromEuler(0.0, utils.degToRad(90), 0);
-    // }
-
-
-    // if(end[2] >= start[2]) {
-    //     xxx = 0;
-    //     ttt = -ttt;
-    // }
-    // console.log(xxx)
-    // for (let i= 0; i< 20; i++) {
-    //     path.push([utils.MakeWorld(start[0],start[1] + i + 1,start[2],0,-90,0, s), [start[0],start[1] + i + 1,start[2]]])
-    // }
-
-    // let q1 = Quaternion.fromAxisAngle([1,0,0], utils.degToRad(-90))
-    // let q2 = Quaternion.fromAxisAngle([1,0,0], utils.degToRad(-180))
-    // let q3 = Quaternion.fromAxisAngle([1,0,0], utils.degToRad(90))
-
-    // Quaternion.fromEuler(Φ, θ, ψ[, order="ZXY"])
-    // let q1 = Quaternion.fromEuler(utils.degToRad(0), utils.degToRad(-90), 0);
-    // let q2 = Quaternion.fromEuler(utils.degToRad(0), utils.degToRad(teta), -phsi);
-    // let q3 = Quaternion.fromEuler(utils.degToRad(0), utils.degToRad(90), 0);
-    // let q4 = Quaternion.fromEuler(utils.degToRad(0),utils.degToRad(90),utils.degToRad(0));
 
 
     for (i = 0; i <= steps; i++) {
         let alp = i * 1.0 / steps;
         let q12 = q1.slerp(q2)(alp);
         let q23 = q2.slerp(q3)(alp);
-        // let q34 = q3.slerp(q4)(alp);
 
         let q123 = q12.slerp(q23)(alp);
-        // let q234 = q23.slerp(q34)(alp);
-
-        // let q1234 = q123.slerp(q234)(alp);
 
         let MR = q123.toMatrix4();
-        // let MR = q1234.toMatrix4();
-
 
         let uma = 1.0 - alp;
         let c0 = uma * uma;
         let c1 = uma * alp;
         let c2 = alp * alp;
-        // let c3 = alp * alp * alp;
-
-        // let translate = [
-        //     start[0] * c0 + p1[0] * c1 + p2[0] * c2 + end[0] * c3,
-        //     start[1] * c0 + p1[1] * c1 + p2[1] * c2 + end[1] * c3,
-        //     start[2] * c0 + p1[2] * c1 + p2[2] * c2 + end[2] * c3,
-        // ]
 
         let translate = [
             start[0] * c0 + mid[0] * c1 + end[0] * c2,
@@ -681,48 +478,11 @@ console.log(pitch);
             start[2] * c0 + mid[2] * c1 + end[2] * c2,
         );
 
-        // console.log(q123);
-
-        // console.log(MT)
 
         path.push([utils.multiplyMatrices(utils.multiplyMatrices(MT, MR), utils.MakeScaleMatrix(s)), translate])
     }
 
-    // for (let i= 0; i<20; i++) {
-    //     path.push([utils.MakeWorld(end[0],p2[1] - (i +1),end[2],0,90,0, s), [end[0],p2[1] -(i+1),end[2]]])
-    // }
-
     return path
-
-    // let deltaT = duration * 1.0 / steps; // diff time between each step
-    // let vy = (duration / 2.0) * g * s; // speed in y-axis (height)
-    // let vx = (end[0] - start[0]) * s / duration;  // speed in x-axis
-    // let vz = (end[2] - start[2]) * s / duration;  // speed in z-axis
-
-    // let q1 = Quaternion.fromAxisAngle([0,1,0], utils.degToRad(90));
-    // let q2 = Quaternion.fromAxisAngle([0,1,0], utils.degToRad(90));
-    // console.log(q1)
-    // console.log(q2)
-    // console.log()
-    // var aj = q1.slerp(q2)(0.5).toMatrix4();
-    // console.log(utils.multiplyMatrices(utils.MakeTranslateMatrix(start[0], start), aj))
-
-
-    // console.log(deltaT, vx, vy, vz);
-    //
-    // let path = [];
-    // path.push(start);
-    // for (let i= 1; i <= steps; i++) {
-    //     path[i] = [
-    //         path[i-1][0] + (vx * deltaT) ,
-    //         path[i-1][1] + (vy * deltaT) ,
-    //         path[i-1][2] + (vz * deltaT) ,
-    //     ];
-    //     vy -= g * deltaT * s;
-    //     console.log(vy);
-    // }
-    // path.push(end);
-    // return path;
 }
 
 function createQuaternionFromYPR(yaw, pitch, roll){
@@ -740,8 +500,19 @@ function createQuaternionFromYPR(yaw, pitch, roll){
 
     return  new Quaternion(qx, qy, qz, qw);
 }
-
-document.addEventListener("click", printMousePos);
-
-// temp = parabolicPathCalculator([0,0,0], [10,0,10], 10, 10);
-// console.log(temp);
+let should_animate = 1
+function startAnimation(event) {
+    let mousePisitionX;
+    let mousePisitionY;
+    mousePisitionX = event.pageX / gl.canvas.width;
+    mousePisitionY = event.pageY / gl.canvas.height;
+    if (should_animate == 0) {
+        frames_to_start = parabolicPathCalculator([ax, ay, az], [0.0, mousePisitionX, mousePisitionY], 10, 200);
+    } else if (should_animate == 1){
+        ax = ax;
+        ay = mousePisitionX;
+        az = mousePisitionY;
+        should_animate = 0
+    }
+    console.log("mouseclicl")
+}
