@@ -258,7 +258,7 @@ function main() {
     var animationIndex = 0;
     drawScene();
 
-    var frames = parabolicPathCalculator([ax, ay, az], [0.0, 0.0, -5.0], 10, 200);
+    var frames = parabolicPathCalculator([ax, ay, az], [0.0, 0.0, -10.0], 10, 200);
 
 
     function animate() {
@@ -554,7 +554,7 @@ function printMousePos(event) {
  * @param s scale
  */
 function parabolicPathCalculator(start, end, duration, steps, s = 0.05, g = 1.0) {
-    let mid = [(start[0] + end[0]) / 2.0, 20, (start[0] + end[0]) / 2.0];
+    let mid = [(start[0] + end[0]) / 2.0, 20, (start[2] + end[2]) / 2.0];
     let p1 = [start[0], start[1] + 20, start[2]];
     let p2 = [end[0], start[1] + 20, end[2]];
     let path = [];
