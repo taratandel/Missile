@@ -426,7 +426,7 @@ document.onkeypress = function (e) {
  * @param s scale
  */
 function parabolicPathCalculator(start, end, duration, steps, s = 0.05, g = 1.0) {
-    let mid = [(start[0] + end[0]) / 2.0, 20, (start[0] + end[0]) / 2.0];
+    let mid = [(start[0] + end[0]) / 2.0, 20, (start[2] + end[2]) / 2.0];
 
     let path = [];
 
