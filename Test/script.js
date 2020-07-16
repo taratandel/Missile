@@ -520,52 +520,62 @@ function startAnimation(event) {
         ax = mousePisitionX;
         ay = mousePisitionY;
         az = az;
-        should_animate = 0
+        should_animate = 0;
     }
-    console.log("mouseclicl")
+    console.log("mouseclicl");
 }
+// can be [1,0,0,0] for direct or [0,1,0,0] for point
+let lightType = [1,0,0,0];
+//each element can be between -250 till 250 we have this for point
+let lightPositionX = 0;
+let lightPositionY = 0;
+let lightPositionZ = 0;
 
+// can be between -180 til 180 we have this for direct
+let lightDirTheta = 90;
+let lightDirPhi = 90;
+
+// Decay factor can be between 0,2
+let lightDecay = [1,0];
+
+// for light color any hex value which is string is acceptable
+//be careful we are using in different places the value of this color that is why the color
+//is so dense take a look at prof coding everything will be more clear this color is for now
+
+let lightsColor = "6ef5ac";
 function unifPar(pHTML, pGLSL, type) {
     this.pHTML = pHTML;
     this.pGLSL = pGLSL;
     this.type = type;
 }
 function valType(gl) {
-    var v = [0,1,0,0];
+    let v = lightType;
     gl.uniform4f(program[this.pGLSL+"Uniform"], v[0], v[1], v[2], v[3]);
 }
-
 function valVec3(gl) {
     gl.uniform3f(program[this.pGLSL+"Uniform"],
-        6,
-        3,
-        5)
+        lightPositionX,
+        lightPositionY,
+        lightPositionZ)
 }
 function valDir(gl) {
-    let t = utils.degToRad(45);
-    let p = utils.degToRad(45);
+    let t = utils.degToRad(lightDirTheta);
+    let p = utils.degToRad(lightDirPhi);
     gl.uniform3f(program[this.pGLSL+"Uniform"],Math.sin(t)*Math.sin(p), Math.cos(t), Math.sin(t)*Math.cos(p));
 }
 
 function val(gl) {
-    gl.uniform1f(program[this.pGLSL+"Uniform"], 30);
+    gl.uniform1f(program[this.pGLSL+"Uniform"], lightDecay);
 }
 
 function valCol(gl) {
-    col = "002200";
-    R = parseInt(col.substring(0,2) ,16) / 255;
-    G = parseInt(col.substring(2,4) ,16) / 255;
-    B = parseInt(col.substring(4,6) ,16) / 255;
+    let col = lightsColor;
+    let R = parseInt(col.substring(0,2) ,16) / 255;
+    let G = parseInt(col.substring(2,4) ,16) / 255;
+    let B = parseInt(col.substring(4,6) ,16) / 255;
     gl.uniform4f(program[this.pGLSL+"Uniform"], R, G, B, 1);
 }
 
-function valD10(gl) {
-    gl.uniform1f(program[this.pGLSL+"Uniform"], 6.1);
-}
-
-function valD100(gl) {
-    gl.uniform1f(program[this.pGLSL+"Uniform"], .8);
-}
 unifParArray =[
 
 
@@ -578,12 +588,10 @@ unifParArray =[
     new unifPar("LBlightType","LBlightType", valType),
     new unifPar("LBPos","LBPos", valVec3),
     new unifPar("LBDir","LBDir", valDir),
-    new unifPar("LBTarget","LBTarget", valD10),
     new unifPar("LBlightColor","LBlightColor", valCol),
+
     new unifPar("ambientLightColor","ambientLightColor", valCol),
-    new unifPar("ambientLightLowColor","ambientLightLowColor", valCol),
     new unifPar("diffuseColor","diffuseColor", valCol),
-    new unifPar("DTexMix","DTexMix", valD100),
     new unifPar("specularColor","specularColor", valCol),
     new unifPar("ambientMatColor","ambientMatColor", valCol),
 ];

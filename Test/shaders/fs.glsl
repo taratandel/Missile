@@ -27,7 +27,6 @@ uniform vec4 ambientLightColor;
 uniform vec4 diffuseColor;
 uniform vec4 specularColor;
 uniform vec4 ambientMatColor;
-uniform float DTexMix;
 
 
 vec3 compLightDir(vec3 LPos, vec3 LDir, vec4 lightType) {
@@ -95,8 +94,8 @@ out vec4 outColor;
 void main() {
   vec4 texcol = texture(u_texture, fs_uv);
 
-  vec4 diffColor = diffuseColor * (1.0-DTexMix) + texcol * DTexMix;
-  vec4 ambColor = ambientMatColor * (1.0-DTexMix) + texcol * DTexMix;
+  vec4 diffColor = diffuseColor;
+  vec4 ambColor = ambientMatColor;
 
   vec3 normalVec = normalize(fs_norm);
   vec3 eyedirVec = normalize(eyePos - fs_pos);
