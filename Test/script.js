@@ -336,7 +336,7 @@ async function init() {
     canvas.addEventListener("mouseup", doMouseUp, false);
     canvas.addEventListener("mousemove", doMouseMove, false);
     canvas.addEventListener("mousewheel", doMouseWheel, false);
-    document.addEventListener("click", startAnimation);
+    // document.addEventListener("click", startAnimation);
 
     gl = canvas.getContext("webgl2");
     if (!gl) {
@@ -516,7 +516,7 @@ function createQuaternionFromYPR(yaw, pitch, roll) {
 
     return new Quaternion(qx, qy, qz, qw);
 }
-let should_animate = 1
+let should_animate = 1;
 function startAnimation(event) {
     let mousePisitionX;
     let mousePisitionY;
@@ -554,13 +554,13 @@ let lightDirTheta = 90;
 let lightDirPhi = 90;
 
 // Decay factor can be between 0,2
-let lightDecay = [1,0];
+let lightDecay = [2,0];
 
 // for light color any hex value which is string is acceptable
 //be careful we are using in different places the value of this color that is why the color
 //is so dense take a look at prof coding everything will be more clear this color is for now
 
-let lightsColor = "6ef5ac";
+let lightsColor = "ffffff";
 function unifPar(pHTML, pGLSL, type) {
     this.pHTML = pHTML;
     this.pGLSL = pGLSL;

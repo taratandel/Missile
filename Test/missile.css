@@ -8,6 +8,7 @@
   right: 2em;
   padding: 1em;
   border-radius: 0.5em;
+  min-width: 250px;
 }
 
 #camera-type-menu {
@@ -21,23 +22,53 @@
 }
 
 .keyboard-help button{
-  font-size: 0.8em;
+  font-size: 1em;
+  font-weight: 500;
   width: 20px;
   height: 20px;
-  padding: 0px;
+  padding: 0;
   margin: 2px;
+
 }
 
 #free-view-help{
   display: none;
 }
 
-#light-color {
-  margin: 0;
+.color-select {
+  margin: 0 0 0 1em;
   padding: 0;
-  width: 30px;
-  height: 30px;
+  width: 1.0em;
+  height: 1.0em;
   border: none;
   box-shadow: none;
   border-radius: 5px;
+}
+.row {
+  padding: 0 1em 0 1em;
+}
+.row label {
+  margin-bottom: 0;
+  min-width: 20px;
+  font-size: 0.8em;
+}
+
+.parent-label{
+  font-size: 0.8em;
+  margin-top: 5px;
+  font-weight: bold;
+}
+.row input[type="range"] {
+  width: calc(100% - 20px - 0.5em);
+  margin-left: 0.5em;
+  display: inline-block;
+  float: right;
+}
+
+#light-type-menu {
+  width: 100%;
+}
+#light-panel{
+  margin-top: 2px;
+  padding: 2px;
 }

@@ -1,14 +1,44 @@
 function changeCameraState(state) {
     setIsLookAtCamera(state);
-    if(state) {
-        $("#free-view-help").hide();
-        $("#look-at-help").slideDown();
+    if (state) {
+        $("#free-view-help").slideUp();
+        setTimeout(function () {$("#look-at-help").slideDown();}, 500);
     } else {
-        $("#free-view-help").slideDown();
-        $("#look-at-help").hide();
+        setTimeout(function () {$("#free-view-help").slideDown();}, 500);
+        $("#look-at-help").slideUp();
     }
 }
 
 function changeLightColor() {
     setLightsColor($('#light-color').val())
+}
+
+function changeLightPositionPoint() {
+    lightPositionX = $("#point-light-position-x").val();
+    lightPositionY = $("#point-light-position-y").val();
+    lightPositionZ = $("#point-light-position-z").val();
+}
+
+function changeLightPositionDirect() {
+    lightDirPhi = $("#direct-light-position-phi").val();
+    lightDirTheta = $("#direct-light-position-theta").val();
+}
+
+function changeToDirectLight() {
+    $("#point-pane").slideUp();
+    setTimeout(function () {$("#direct-pane").slideDown()}, 500);
+    lightType = [1, 0, 0, 0];
+
+}
+
+function changeToPointLight() {
+    $("#direct-pane").slideUp();
+    setTimeout(function () {$("#point-pane").slideDown()}, 500);
+
+    lightType = [0, 1, 0, 0];
+
+}
+
+function changeLightDecay() {
+    lightDecay[0] = $("#point-pane").val();
 }

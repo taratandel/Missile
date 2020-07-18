@@ -43,28 +43,102 @@
     </div>
 
     <div id="free-view-help" class="alert alert-secondary keyboard-help" role="alert">
-        <button type="button" class="btn btn-dark">W</button> - Move Forward
+        <button type="button" class="btn btn-dark">W</button>
+        - Move Forward
         <br/>
-        <button type="button" class="btn btn-dark">S</button> - Move Backward
+        <button type="button" class="btn btn-dark">S</button>
+        - Move Backward
         <br/>
-        <button type="button" class="btn btn-dark">A</button> - Move Left
+        <button type="button" class="btn btn-dark">A</button>
+        - Move Left
         <br/>
-        <button type="button" class="btn btn-dark">D</button> - Move Right
+        <button type="button" class="btn btn-dark">D</button>
+        - Move Right
         <br/>
-        <button type="button" class="btn btn-dark">Q</button> - Move Up
+        <button type="button" class="btn btn-dark">Q</button>
+        - Move Up
         <br/>
-        <button type="button" class="btn btn-dark">E</button> - Move Down
+        <button type="button" class="btn btn-dark">E</button>
+        - Move Down
     </div>
 
     <div id="look-at-help" class="alert alert-secondary keyboard-help" role="alert">
-        <button type="button" class="btn btn-dark">+</button> - Zoom In
+        <button type="button" class="btn btn-dark">+</button>
+        - Zoom In
         <br/>
-        <button type="button" class="btn btn-dark">-</button> - Zoom Out
+        <button type="button" class="btn btn-dark">-</button>
+        - Zoom Out
     </div>
 
-    <label for="light-color">Light Color</label>
+
+    <label for="light-type-menu">Light</label>
     <br/>
-    <input type="color" id="light-color" oninput="changeLightColor()"  value="#FFFFFF">
+    <div id="light-type-menu" class="btn-group btn-group-toggle" data-toggle="buttons">
+        <label class="btn btn-primary active">
+            <input type="radio" name="options" id="direct-light" checked onclick="changeToDirectLight()"> Direct Light
+        </label>
+        <label class="btn btn-primary">
+            <input type="radio" name="options" id="point-light" onclick="changeToPointLight()"> Point Light
+        </label>
+    </div>
+
+    <div id="light-panel" class="alert alert-secondary" role="alert">
+        <div id="direct-pane">
+            <label class="parent-label">Light Direction</label>
+            <div>
+                <div class="row">
+                    <label for="point-light-position-x">Φ</label>
+                    <input type="range" min="0" max="360" class="form-control-range" id="direct-light-position-phi"
+                           oninput="changeLightPositionDirect()" value="0">
+                </div>
+
+                <div class="row">
+                    <label for="point-light-position-y">θ</label>
+                    <input type="range" min="0" max="360" class="form-control-range" id="direct-light-position-theta"
+                           oninput="changeLightPositionDirect()" value="0">
+                </div>
+            </div>
+        </div>
+
+        <div id="point-pane" style="display: none">
+            <label class="parent-label">Light Position</label>
+            <div class="row">
+                <label for="point-light-position-x">x</label>
+                <input type="range" min="0" max="20" class="form-control-range" id="point-light-position-x"
+                       oninput="changeLightPositionPoint()" value="0">
+            </div>
+
+            <div class="row">
+                <label for="point-light-position-y">y</label>
+                <input type="range" min="0" max="20" class="form-control-range" id="point-light-position-y"
+                       oninput="changeLightPositionPoint()" value="0">
+            </div>
+
+            <div class="row">
+                <label for="point-light-position-z">z</label>
+                <input type="range" min="0" max="20" class="form-control-range" id="point-light-position-z"
+                       oninput="changeLightPositionPoint()" value="0">
+            </div>
+        </div>
+
+        <label class="parent-label">Colors</label>
+        <div class="row">
+            <label for="light-color">Light Color</label>
+            <input type="color" id="light-color" class="color-select" oninput="changeLightColor()" value="#FFFFFF">
+        </div>
+
+        <div class="row" style="margin-top: 5px">
+            <label for="ambient-color">Ambient Color</label>
+            <input type="color" id="ambient-color" class="color-select" oninput="" value="#000000">
+        </div>
+
+        <label class="parent-label">Decay</label>
+        <div class="row">
+            <label for="light-decay">d</label>
+            <input id="light-decay" class="form-control-range" type="range" min="0.0" max="2.0" step="0.01"
+                   oninput="changeLightDecay()" value="0.0">
+        </div>
+    </div>
 
 
 </div>
