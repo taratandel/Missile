@@ -1,12 +1,14 @@
 function changeCameraState(state) {
     setIsLookAtCamera(state);
     if(state) {
-        $("#help-info").slideUp();
+        $("#free-view-help").hide();
+        $("#look-at-help").slideDown();
     } else {
-        $("#help-info").slideDown();
+        $("#free-view-help").slideDown();
+        $("#look-at-help").hide();
     }
 }
 
 function changeLightColor() {
-    console.log($('#light-color').val());
+    setLightsColor($('#light-color').val())
 }

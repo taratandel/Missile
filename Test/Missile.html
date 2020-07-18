@@ -41,7 +41,8 @@
             <input type="radio" name="options" id="free-view" onclick="changeCameraState(false)"> Free View
         </label>
     </div>
-    <div id="help-info" class="alert alert-secondary" role="alert">
+
+    <div id="free-view-help" class="alert alert-secondary keyboard-help" role="alert">
         <button type="button" class="btn btn-dark">W</button> - Move Forward
         <br/>
         <button type="button" class="btn btn-dark">S</button> - Move Backward
@@ -53,6 +54,12 @@
         <button type="button" class="btn btn-dark">Q</button> - Move Up
         <br/>
         <button type="button" class="btn btn-dark">E</button> - Move Down
+    </div>
+
+    <div id="look-at-help" class="alert alert-secondary keyboard-help" role="alert">
+        <button type="button" class="btn btn-dark">+</button> - Zoom In
+        <br/>
+        <button type="button" class="btn btn-dark">-</button> - Zoom Out
     </div>
 
     <label for="light-color">Light Color</label>

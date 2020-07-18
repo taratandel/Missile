@@ -540,7 +540,7 @@ function setIsLookAtCamera(state) {
         elev = -beta;
     }
 }
-document.addEventListener("click", printMousePos);
+// document.addEventListener("click", printMousePos);
 
 // can be [1,0,0,0] for direct or [0,1,0,0] for point
 let lightType = [1,0,0,0];
@@ -613,3 +613,7 @@ unifParArray =[
     new unifPar("specularColor","specularColor", valCol),
     new unifPar("ambientMatColor","ambientMatColor", valCol),
 ];
+
+function setLightsColor(color) {
+    lightsColor = color.substr(1);
+}
