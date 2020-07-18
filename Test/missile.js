@@ -6,3 +6,7 @@ function changeCameraState(state) {
         $("#help-info").slideDown();
     }
 }
+
+function changeLightColor() {
+    console.log($('#light-color').val());
+}

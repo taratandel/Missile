@@ -6,7 +6,7 @@
   position: fixed;
   bottom: 2em;
   right: 2em;
-  padding: 2em;
+  padding: 1em;
   border-radius: 0.5em;
 }
 
@@ -22,10 +22,19 @@
 }
 
 #help-info button{
-  /*display: none;*/
   font-size: 0.8em;
   width: 20px;
   height: 20px;
   padding: 0px;
   margin: 2px;
+}
+
+#light-color {
+  margin: 0;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  border: none;
+  box-shadow: none;
+  border-radius: 5px;
 }

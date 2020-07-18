@@ -30,6 +30,8 @@
 </canvas>
 <div id="panel">
 
+    <label for="camera-type-menu">Camera</label>
+    <br/>
     <div id="camera-type-menu" class="btn-group btn-group-toggle" data-toggle="buttons">
         <label class="btn btn-primary active">
             <input type="radio" name="options" id="look-at" checked onclick="changeCameraState(true)"> Look At
@@ -51,6 +53,12 @@
         <br/>
         <button type="button" class="btn btn-dark">E</button> - Move Down
     </div>
+
+    <label for="light-color">Light Color</label>
+    <br/>
+    <input type="color" id="light-color" oninput="changeLightColor()"  value="#FFFFFF">
+
+
 </div>
 </body>
 </html>
