@@ -7,9 +7,10 @@ var vaos = [];
 var textures = [];
 
 var i = 0;
-var cx = 0.0, cy = 0.0, cz = 4.5;
-var elev = 0.0, ang = 0.0;
+var cx = 0.0, cy = 0.0, cz = 4.5, elev = 0.0, ang = 0.0;
 var lookRadius = 10.0;
+
+var isLookAtCamera = true;
 
 var rx = 0.0, ry = -90.0, rz = 0.0;
 var missile = {
@@ -72,8 +73,14 @@ function doMouseMove(event) {
         lastMouseY = event.pageY;
 
         if ((dx != 0) || (dy != 0)) {
-            alpha = alpha + 0.5 * dx;
-            beta = beta + 0.5 * dy;
+
+            if (isLookAtCamera) {
+                alpha = alpha + 0.5 * dx;
+                beta = beta + 0.5 * dy;
+            } else {
+                ang = ang + 0.5 * dx;
+                elev = elev + 0.5 * dy;
+            }
         }
     }
     console.log("mousemove")
@@ -219,6 +226,8 @@ function main() {
     drawScene();
 
 
+    var frames = parabolicPathCalculator([ax, ay, az], [0.0, 0.0, -10.0], 10, 200);
+
 
     function animate() {
         var currentTime = (new Date).getTime();
@@ -264,16 +273,21 @@ function main() {
 
             }
 
-            cx = ax + r * Math.sin(utils.degToRad(alpha)) * Math.cos(utils.degToRad(beta));
-            cz = az + r * Math.cos(utils.degToRad(alpha)) * Math.cos(utils.degToRad(beta));
-            cy = ay + r * Math.sin(utils.degToRad(beta));
-            var uy = 1;
-            if (Math.cos(utils.degToRad(beta)) < 0) {
-                uy = -1;
-            }
+            // make the camera view
+            var viewMatrix = null;
+            if (isLookAtCamera) {
+                cx = ax + r * Math.sin(utils.degToRad(alpha)) * Math.cos(utils.degToRad(beta));
+                cz = az + r * Math.cos(utils.degToRad(alpha)) * Math.cos(utils.degToRad(beta));
+                cy = ay + r * Math.sin(utils.degToRad(beta));
+                var uy = 1;
+                if (Math.cos(utils.degToRad(beta)) < 0) {
+                    uy = -1;
+                }
 
-            // var viewMatrix = utils.MakeView(cx, cy, cz, elev, ang);
-            var viewMatrix = createViewMatrix([ax, ay, az], [cx, cy, cz], uy);
+                viewMatrix = createViewMatrix([ax, ay, az], [cx, cy, cz], uy);
+            } else {
+                viewMatrix = utils.MakeView(cx, cy, cz, elev, ang);
+            }
 
 
             var viewWorldMatrix = utils.multiplyMatrices(viewMatrix, worldMatrix);
@@ -355,69 +369,65 @@ window.onload = init;
 document.onkeypress = function (e) {
 
     // console.log(e.key);
-    switch (e.key) {
-        case 'a':
-        case 'A':
-            // cx -= 0.01;
-            ax -= 0.01;
-            break;
-        case 'd':
-        case 'D':
-            // cx += 0.01;
-            ax += 0.01;
-            break;
+    if (!isLookAtCamera) {
+        let moveSpeed = 0.1;
+        let radAng = utils.degToRad(ang);
+        switch (e.key) {
+            // camera move forward
+            case 'w':
+            case 'W':
+                cz -= moveSpeed * Math.cos(radAng);
+                cx += moveSpeed * Math.sin(radAng);
+                break;
 
-        case 'e':
-        case 'E':
-            // cy -= 0.01;
-            ay -= 0.01;
-            break;
-        case 'q':
-        case 'Q':
-            // cy += 0.01;
-            ay += 0.01;
-            break;
+            // camera move backward
+            case 's':
+            case 'S':
+                cz += moveSpeed * Math.cos(radAng);
+                cx -= moveSpeed * Math.sin(radAng);
+                break;
 
-        case 'w':
-        case 'W':
-            // cz -= 0.01;
-            az -= 0.01;
-            break;
-        case 's':
-        case 'S':
-            // cz += 0.01;
-            az += 0.01;
-            break;
+            // camera move left
+            case 'a':
+            case 'A':
+                cz -= moveSpeed * Math.sin(radAng);
+                cx -= moveSpeed * Math.cos(radAng);
+                break;
 
-        case 'r':
-        case 'R':
-            ang -= 1.5;
-            break;
-        case 't':
-        case 'T':
-            ang += 1.5;
-            break;
+            // camera move right
+            case 'd':
+            case 'D':
+                cz += moveSpeed * Math.sin(radAng);
+                cx += moveSpeed * Math.cos(radAng);
+                break;
 
-        case 'z':
-        case 'Z':
-            elev -= 1.5;
-            break;
-        case 'x':
-        case 'X':
-            elev += 1.5;
-            break;
+            // camera move up
+            case 'e':
+            case 'E':
+                cy -= moveSpeed;
+                // ay -= 0.01;
+                break;
 
-        case '+':
-            r -= 0.1;
-            if (r < minR) {
-                r += 0.1
-            }
-            break;
-        case '-':
-            r += 0.1;
-        case ' ':
-            frames = frames_to_start;
-            break
+            // camera move down
+            case 'q':
+            case 'Q':
+                cy += moveSpeed;
+                // ay += 0.01;
+                break;
+        }
+    } else {
+        switch (e.key) {
+            case '+':
+                r -= 0.1;
+                if (r < minR) {
+                    r += 0.1
+                }
+                break;
+
+            case '-':
+                r += 0.1;
+                break
+        }
     }
 
 };
@@ -443,18 +453,16 @@ function parabolicPathCalculator(start, end, duration, steps, s = 0.05, g = 1.0)
 
     let pitch = 0.0;
 
-    if(start[2] >= end[2]) {
-        if(start[0] === end[0]) {
+    if (start[2] >= end[2]) {
+        if (start[0] === end[0]) {
             pitch = 180.0;
-        }else {
+        } else {
             pitch = 180 + utils.radToDeg(Math.atan((start[0] - end[0]) / (start[2] - end[2])));
         }
     } else {
         pitch = utils.radToDeg(Math.atan((start[0] - end[0]) / (start[2] - end[2])));
 
     }
-
-console.log(pitch);
     q1 = createQuaternionFromYPR(90.0, pitch, 0.0);
     q2 = createQuaternionFromYPR(0.0, pitch, 0.0);
     q3 = createQuaternionFromYPR(-90.0, pitch, 0.0);
@@ -493,7 +501,7 @@ console.log(pitch);
     return path
 }
 
-function createQuaternionFromYPR(yaw, pitch, roll){
+function createQuaternionFromYPR(yaw, pitch, roll) {
     let yc = Math.cos(utils.degToRad(yaw * 0.5));
     let ys = Math.sin(utils.degToRad(yaw * 0.5));
     let pc = Math.cos(utils.degToRad(pitch * 0.5));
@@ -506,7 +514,7 @@ function createQuaternionFromYPR(yaw, pitch, roll){
     let qy = rc * ps * yc + rs * pc * ys;
     let qz = rc * pc * ys - rs * ps * yc;
 
-    return  new Quaternion(qx, qy, qz, qw);
+    return new Quaternion(qx, qy, qz, qw);
 }
 let should_animate = 1
 function startAnimation(event) {
@@ -524,6 +532,16 @@ function startAnimation(event) {
     }
     console.log("mouseclicl");
 }
+
+function setIsLookAtCamera(state) {
+    isLookAtCamera = state;
+    if(!isLookAtCamera) {
+        ang = -alpha;
+        elev = -beta;
+    }
+}
+document.addEventListener("click", printMousePos);
+
 // can be [1,0,0,0] for direct or [0,1,0,0] for point
 let lightType = [1,0,0,0];
 //each element can be between -250 till 250 we have this for point
