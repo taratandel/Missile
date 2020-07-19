@@ -10,7 +10,7 @@ function changeCameraState(state) {
 }
 
 function changeLightColor() {
-    setLightsColor($('#light-color').val())
+    setLightsColor($('#light-color').val(), )
 }
 
 function changeLightPositionPoint() {
@@ -23,11 +23,13 @@ function changeLightPositionDirect() {
     lightDirPhi = $("#direct-light-position-phi").val();
     lightDirTheta = $("#direct-light-position-theta").val();
 }
-
+let lightsType = [1,0,0,0];
 function changeToDirectLight() {
     $("#point-pane").slideUp();
     setTimeout(function () {$("#direct-pane").slideDown()}, 500);
-    lightType = [1, 0, 0, 0];
+
+    lightsType = [1, 0, 0, 0];
+    getLightsArray();
 
 }
 
@@ -35,7 +37,8 @@ function changeToPointLight() {
     $("#direct-pane").slideUp();
     setTimeout(function () {$("#point-pane").slideDown()}, 500);
 
-    lightType = [0, 1, 0, 0];
+    lightsType = [1, 0, 0, 0];
+    getLightsArray();
 
 }
 
@@ -77,8 +80,8 @@ function triggerKeyPress(keyVal) {
 }
 
 function lightChange() {
-    let t = getLightType();
-    console.log(t)
+    getLightsArray()
+
 }
 
 function getLightType() {
@@ -86,9 +89,30 @@ function getLightType() {
 }
 
 function lightEnableChange() {
-    console.log($("#enable-checkbox").prop("checked"))
+    getLightsArray()
 }
+
+function getlightEnableStatus() {
+    return  $("#enable-checkbox").prop("checked")
+}
+
 
 function setLightEnableState(state) {
     $("#enable-checkbox").prop("checked", state)
+}
+
+function getLightsArray() {
+
+    if (getLightType() == 0 && !getlightEnableStatus()) {
+        lightType[0] = [0, 0, 0, 0];
+    }
+    else if (getLightType() == 0 && getlightEnableStatus() ) {
+        lightType[0] = lightsType;
+    }
+    if (getLightType() == 1 && getlightEnableStatus()) {
+        lightType[1] = lightsType;
+    }
+    else if (getLightType() == 1 && !getlightEnableStatus()) {
+        lightType[1] = [0,0,0,0]
+    }
 }

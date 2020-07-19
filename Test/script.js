@@ -35,7 +35,7 @@ var dirLightAlpha = -utils.degToRad(60);
 var dirLightBeta = -utils.degToRad(120);
 // modify the light direction
 var directionalLight = [Math.cos(dirLightAlpha) * Math.cos(dirLightBeta),
-    Math.sin(dirLightAlpha),
+    Math.sin(dirLightAlpha),z
     Math.cos(dirLightAlpha) * Math.sin(dirLightBeta)
 ];
 
@@ -54,14 +54,14 @@ function doMouseDown(event) {
     lastMouseX = event.pageX;
     lastMouseY = event.pageY;
     mouseState = true;
-    console.log("mousedown")
+    // console.log("mousedown")
 }
 
 function doMouseUp(event) {
     lastMouseX = -100;
     lastMouseY = -100;
     mouseState = false;
-    console.log("mouseup")
+    // console.log("mouseup")
 
 }
 
@@ -83,7 +83,7 @@ function doMouseMove(event) {
             }
         }
     }
-    console.log("mousemove")
+    // console.log("mousemove")
 }
 
 function doMouseWheel(event) {
@@ -264,7 +264,7 @@ function main() {
             if (i === 0) {
 
                 if (frames && frames.length > 0 && animationIndex + 1 > 0) {
-                    console.log("it's channig the ax")
+                    // console.log("it's channig the ax")
                     worldMatrix = frames[animationIndex][0];
                     ax = frames[animationIndex][1][0];
                     ay = frames[animationIndex][1][1];
@@ -547,7 +547,7 @@ function setIsLookAtCamera(state) {
 // document.addEventListener("click", printMousePos);
 
 // can be [1,0,0,0] for direct or [0,1,0,0] for point
-let lightType = [1,0,0,0];
+let lightType = [[1,0,0,0], [0,0,0,0]];
 //each element can be between -250 till 250 we have this for point
 let lightPositionX = 0;
 let lightPositionY = 0;
@@ -564,14 +564,27 @@ let lightDecay = [2,0];
 //be careful we are using in different places the value of this color that is why the color
 //is so dense take a look at prof coding everything will be more clear this color is for now
 
-let lightsColor = "ffffff";
+let lightsColor = ["ffffff","ffffff"];
+let ambientLightColor = "ffffff";
+let diffuseColor = "ffffff";
+let specularColor = "ffffff";
+let ambientMatColor = "ffffff";
+
+
+let SpecShine = 200;
 function unifPar(pHTML, pGLSL, type) {
     this.pHTML = pHTML;
     this.pGLSL = pGLSL;
     this.type = type;
 }
 function valType(gl) {
-    let v = lightType;
+    let v = []
+    if (this.pHTML == "LBlightType") {
+        v = lightType[1];
+    } else {
+        v = lightType[0];
+    }
+    console.log(v);
     gl.uniform4f(program[this.pGLSL+"Uniform"], v[0], v[1], v[2], v[3]);
 }
 function valVec3(gl) {
@@ -581,17 +594,44 @@ function valVec3(gl) {
         lightPositionZ)
 }
 function valDir(gl) {
+
     let t = utils.degToRad(lightDirTheta);
     let p = utils.degToRad(lightDirPhi);
     gl.uniform3f(program[this.pGLSL+"Uniform"],Math.sin(t)*Math.sin(p), Math.cos(t), Math.sin(t)*Math.cos(p));
 }
 
 function val(gl) {
-    gl.uniform1f(program[this.pGLSL+"Uniform"], lightDecay);
+    let value;
+    if (this.pHTML == "LBDecay") {
+        value = lightDecay[1];
+
+    } else if (this.pHTML == "LADecay") {
+        value = lightDecay[0];
+    } else {
+        value = SpecShine
+    }
+
+        gl.uniform1f(program[this.pGLSL+"Uniform"], value);
 }
 
 function valCol(gl) {
-    let col = lightsColor;
+    let lightColor = "fffffff";
+    if (this.pHTML == "LBlightColor"){
+        lightColor = lightsColor[1];
+
+    } else if (this.pHTML == "LAlightColor") {
+        lightColor = lightsColor[0];
+    }else if (this.pHTML == "ambientLightColor") {
+        lightColor = ambientLightColor;
+    } else if (this.pHTML == "diffuseColor") {
+        lightColor = diffuseColor;
+    } else if (this.pHTML == "specularColor")
+    {
+        lightColor = specularColor;
+    } else {
+        lightColor = ambientMatColor;
+    }
+    let col = lightColor;
     let R = parseInt(col.substring(0,2) ,16) / 255;
     let G = parseInt(col.substring(2,4) ,16) / 255;
     let B = parseInt(col.substring(4,6) ,16) / 255;
@@ -610,14 +650,18 @@ unifParArray =[
     new unifPar("LBlightType","LBlightType", valType),
     new unifPar("LBPos","LBPos", valVec3),
     new unifPar("LBDir","LBDir", valDir),
+    new unifPar("LADecay","LADecay", val),
     new unifPar("LBlightColor","LBlightColor", valCol),
 
     new unifPar("ambientLightColor","ambientLightColor", valCol),
     new unifPar("diffuseColor","diffuseColor", valCol),
     new unifPar("specularColor","specularColor", valCol),
     new unifPar("ambientMatColor","ambientMatColor", valCol),
+    new unifPar("SpecShine","SpecShine", val),
+
 ];
 
-function setLightsColor(color) {
+function setLightsColor(color, type) {
+
     lightsColor = color.substr(1);
 }
