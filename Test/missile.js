@@ -75,3 +75,20 @@ function pauseAnimationChange() {
 function triggerKeyPress(keyVal) {
     $.event.trigger({ type : 'keypress', key: keyVal });
 }
+
+function lightChange() {
+    let t = getLightType();
+    console.log(t)
+}
+
+function getLightType() {
+    return $("#light-selector").val();
+}
+
+function lightEnableChange() {
+    console.log($("#enable-checkbox").prop("checked"))
+}
+
+function setLightEnableState(state) {
+    $("#enable-checkbox").prop("checked", state)
+}
