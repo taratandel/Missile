@@ -94,8 +94,8 @@ out vec4 outColor;
 void main() {
   vec4 texcol = texture(u_texture, fs_uv);
 
-  vec4 diffColor = diffuseColor;
-  vec4 ambColor = ambientMatColor;
+  vec4 diffColor = diffuseColor  * 0.001 + texcol * 0.999;
+  vec4 ambColor = ambientMatColor * 0.001 + texcol * 0.999;
 
   vec3 normalVec = normalize(fs_norm);
   vec3 eyedirVec = normalize(eyePos - fs_pos);
