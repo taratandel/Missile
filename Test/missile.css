@@ -72,3 +72,12 @@
   margin-top: 2px;
   padding: 2px;
 }
+
+#action-btn{
+  width: 60%;
+  float: left;
+}
+#reset-btn {
+  width: 35%;
+  float: right;
+}

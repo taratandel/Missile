@@ -222,7 +222,6 @@ function main() {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         gl.generateMipmap(gl.TEXTURE_2D);
     };
-    var animationIndex = 0;
     drawScene();
 
 
@@ -236,13 +235,17 @@ function main() {
             return;
         }
         var deltaC = (30 * (currentTime - lastUpdateTime)) / 1000;
-        if ( frames.length > 0 && deltaC > .5 && animationIndex + 1 != frames.length) {
-            should_animate = 2
-            animationIndex = (animationIndex + 1) ;
-        } else if (animationIndex + 1 == frames.length) {
-            should_animate = 1
-            animationIndex = -1
-            frames = []
+        if(should_animate) {
+            if (frames.length > 0 && deltaC > .5 && animationIndex + 1 !== frames.length) {
+                // should_animate = 2
+                animationIndex = (animationIndex + 1);
+            } else if (animationIndex + 1 === frames.length) {
+                // should_animate = 1
+                // animationIndex = -1
+                // frames = []
+                should_animate = false;
+                pauseAnimationChange();
+            }
         }
         lastUpdateTime = currentTime;
     }
@@ -516,22 +519,23 @@ function createQuaternionFromYPR(yaw, pitch, roll) {
 
     return new Quaternion(qx, qy, qz, qw);
 }
-let should_animate = 1;
-function startAnimation(event) {
-    let mousePisitionX;
-    let mousePisitionY;
-    mousePisitionX = gl.canvas.width/event.pageX;
-    mousePisitionY = gl.canvas.height/event.pageY;
-    if (should_animate == 0) {
-        frames_to_start = parabolicPathCalculator([ax, ay, az], [mousePisitionX, ay, mousePisitionY], 10, 200);
-    } else if (should_animate == 1){
-        ax = mousePisitionX;
-        ay = mousePisitionY;
-        az = az;
-        should_animate = 0;
-    }
-    console.log("mouseclicl");
-}
+let should_animate = false;
+var animationIndex = 0;
+// function startAnimation(event) {
+//     let mousePisitionX;
+//     let mousePisitionY;
+//     mousePisitionX = gl.canvas.width/event.pageX;
+//     mousePisitionY = gl.canvas.height/event.pageY;
+//     if (should_animate) {
+//         frames_to_start = parabolicPathCalculator([ax, ay, az], [mousePisitionX, ay, mousePisitionY], 10, 200);
+//     } else if (should_animate == 1){
+//         ax = mousePisitionX;
+//         ay = mousePisitionY;
+//         az = az;
+//         should_animate = 0;
+//     }
+//     console.log("mouseclicl");
+// }
 
 function setIsLookAtCamera(state) {
     isLookAtCamera = state;

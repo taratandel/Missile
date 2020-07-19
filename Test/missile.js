@@ -42,3 +42,32 @@ function changeToPointLight() {
 function changeLightDecay() {
     lightDecay[0] = $("#point-pane").val();
 }
+
+function toggleAnimationState() {
+    should_animate = !should_animate;
+    if(should_animate) {
+        playAnimationChange();
+    } else {
+        pauseAnimationChange();
+    }
+}
+
+function resetAnimationState() {
+    if(should_animate) {
+        pauseAnimationChange();
+    }
+    should_animate = false;
+    animationIndex = 0;
+}
+
+function playAnimationChange() {
+    $("#action-btn").removeClass("btn-success");
+    $("#action-btn").addClass("btn-danger");
+    $("#action-btn").html("Pause");
+}
+
+function pauseAnimationChange() {
+    $("#action-btn").removeClass("btn-danger");
+    $("#action-btn").addClass("btn-success");
+    $("#action-btn").html("Play");
+}
