@@ -71,3 +71,7 @@ function pauseAnimationChange() {
     $("#action-btn").addClass("btn-success");
     $("#action-btn").html("Play");
 }
+
+function triggerKeyPress(keyVal) {
+    $.event.trigger({ type : 'keypress', key: keyVal });
+}
