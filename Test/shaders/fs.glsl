@@ -77,7 +77,7 @@ vec4 compSpecular(vec3 lightDir, vec4 lightCol, vec3 normalVec, vec3 eyedirVec) 
 
   vec4 LScol = lightCol * specularColor * max(sign(LdotN),0.0);
   // --> Phong
-  vec4 specularPhong = LScol * pow(LdotR, 100.0);
+  vec4 specularPhong = LScol * pow(LdotR, SpecShine);
 
   // ----> Select final component
   return          specularPhong ;
