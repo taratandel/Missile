@@ -1,97 +1,54 @@
-var program;
-var gl;
-var shaderDir;
-var baseDir;
+// initializers
+let program;
+let gl;
+let shaderDir;
+let baseDir;
+// vertices and texture
+let vaos = [];
+let textures = [];
 
-var vaos = [];
-var textures = [];
 
-var i = 0;
-var cx = 0.0, cy = 0.0, cz = 4.5, elev = 0.0, ang = 0.0;
-var lookRadius = 10.0;
+// camera positions
+let cx = 0.02, cy = 0.13, cz = 4.3, elev = 0.0, ang = 0.0;
+let lookRadius = 10.0;
 
-var isLookAtCamera = true;
+let isLookAtCamera = true;
+let animationIndex = 0;
 
-var rx = 0.0, ry = -90.0, rz = 0.0;
-var missile = {
+let rx = 0.0, ry = -90.0, rz = 0.0;
+let missile = {
     objPath: 'Models/Missile2/R73-Ready.obj',
     texturePath: 'Models/Missile2/R73_Texture.png',
-    worldMatrix: utils.MakeWorld(0.0, 0.0, 4.5, 0.0, -90.0, 0.0, 0.05),
+    scale: 0.02,
+    worldMatrix: utils.MakeWorld(0.0, 0.0, 4.5, 0.0, -90.0, 0.0, self.scale),
     obj: null,
     texture: null,
 };
 
-var landscape = {
+let landscape = {
     objPath: 'Models/Landscape/mount.obj',
     texturePath: 'Models/Landscape/ground_grass_3264_4062_Small.jpg',
-    worldMatrix: utils.MakeWorld(0.0, -1.0, 0.0, 0.0, 0.0, 0.0, 1.0),
+    worldMatrix: utils.MakeWorld(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0),
     obj: null,
     texture: null,
 };
 
-var directionalLightColor = [0.1, 0.1, 0.10];
-
-var dirLightAlpha = -utils.degToRad(60);
-var dirLightBeta = -utils.degToRad(120);
-// modify the light direction
-var directionalLight = [Math.cos(dirLightAlpha) * Math.cos(dirLightBeta),
-    Math.sin(dirLightAlpha),
-    Math.cos(dirLightAlpha) * Math.sin(dirLightBeta)
-];
 
 
 
 // missile position
-var ax = 5.0, ay = 0.0, az = 5.0;
-var frames, frames_to_start;
-var alpha = 0.0, beta = 0.0, r = Math.abs(cz - az), minR = 0.5;
+let ax = 0.0, ay = 0.102, az = 4.1;
+let frames, frames_to_start;
+let alpha = 0.0, beta = 0.0, r = Math.abs(cz - az), minR = 0.2;
 
 // event handler
-var mouseState = false;
-var lastMouseX = -100, lastMouseY = -100;
+let mouseState = false;
+let lastMouseX = -100, lastMouseY = -100;
 
-function doMouseDown(event) {
-    lastMouseX = event.pageX;
-    lastMouseY = event.pageY;
-    mouseState = true;
-    // console.log("mousedown")
-}
+//animation
+let should_animate = false;
 
-function doMouseUp(event) {
-    lastMouseX = -100;
-    lastMouseY = -100;
-    mouseState = false;
-    // console.log("mouseup")
 
-}
-
-function doMouseMove(event) {
-    if (mouseState) {
-        let dx = event.pageX - lastMouseX;
-        let dy = lastMouseY - event.pageY;
-        lastMouseX = event.pageX;
-        lastMouseY = event.pageY;
-
-        if ((dx != 0) || (dy != 0)) {
-
-            if (isLookAtCamera) {
-                alpha = alpha + 0.5 * dx;
-                beta = beta + 0.5 * dy;
-            } else {
-                ang = ang + 0.5 * dx;
-                elev = elev + 0.5 * dy;
-            }
-        }
-    }
-    // console.log("mousemove")
-}
-
-function doMouseWheel(event) {
-    var nLookRadius = lookRadius + event.wheelDelta / 1000.0;
-    if ((nLookRadius > 2.0) && (nLookRadius < 20.0)) {
-        lookRadius = nLookRadius;
-    }
-}
 
 
 function createViewMatrix(objPosition, camPosition, uy) {
@@ -117,7 +74,7 @@ function createViewMatrix(objPosition, camPosition, uy) {
 
 function main() {
 
-    var lastUpdateTime = (new Date).getTime();
+    let lastUpdateTime = (new Date).getTime();
 
     utils.resizeCanvasToDisplaySize(gl.canvas);
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -126,19 +83,17 @@ function main() {
     gl.enable(gl.DEPTH_TEST);
 
 
-    var positionAttributeLocation = gl.getAttribLocation(program, "a_position");
-    var uvAttributeLocation = gl.getAttribLocation(program, "a_uv");
-    var matrixLocation = gl.getUniformLocation(program, "matrix");
-    var textLocation = gl.getUniformLocation(program, "u_texture");
-    var lightDirectionHandle = gl.getUniformLocation(program, 'lightDirection');
-    var lightColorHandle = gl.getUniformLocation(program, 'lightColor');
-    var normalMatrixPositionHandle = gl.getUniformLocation(program, 'nMatrix');
-    var norm = gl.getAttribLocation(program, "in_norm");
-    for(var i = 0; i < unifParArray.length; i++) {
-        program[unifParArray[i].pGLSL+"Uniform"] = gl.getUniformLocation(program, unifParArray[i].pGLSL);
+    let positionAttributeLocation = gl.getAttribLocation(program, "a_position");
+    let uvAttributeLocation = gl.getAttribLocation(program, "a_uv");
+    let matrixLocation = gl.getUniformLocation(program, "matrix");
+    let textLocation = gl.getUniformLocation(program, "u_texture");
+    let normalMatrixPositionHandle = gl.getUniformLocation(program, 'nMatrix');
+    let norm = gl.getAttribLocation(program, "in_norm");
+    for(let unifArrayIndex = 0; unifArrayIndex < unifParArray.length; unifArrayIndex++) {
+        program[unifParArray[unifArrayIndex].pGLSL+"Uniform"] = gl.getUniformLocation(program, unifParArray[unifArrayIndex].pGLSL);
     }
 
-    var perspectiveMatrix = utils.MakePerspective(70, gl.canvas.width / gl.canvas.height, 0.1, 100.0);
+    let perspectiveMatrix = utils.MakePerspective(70, gl.canvas.width / gl.canvas.height, 0.1, 100.0);
     gl.enable(gl.DEPTH_TEST)
 
     // bind missile to its array
@@ -225,7 +180,7 @@ function main() {
     drawScene();
 
 
-    frames = parabolicPathCalculator([ax, ay, az], [0.0, 0.0, -10.0], 10, 200);
+    frames = parabolicPathCalculator([ax, ay, az], [1.28, 1.76, -0.35], 10, 200);
 
 
     function animate() {
@@ -234,15 +189,11 @@ function main() {
         if (!frames) {
             return;
         }
-        var deltaC = (30 * (currentTime - lastUpdateTime)) / 1000;
+        let deltaC = (30 * (currentTime - lastUpdateTime)) / 1000;
         if(should_animate) {
             if (frames.length > 0 && deltaC > .5 && animationIndex + 1 !== frames.length) {
-                // should_animate = 2
                 animationIndex = (animationIndex + 1);
             } else if (animationIndex + 1 === frames.length) {
-                // should_animate = 1
-                // animationIndex = -1
-                // frames = []
                 should_animate = false;
                 pauseAnimationChange();
             }
@@ -252,26 +203,24 @@ function main() {
 
     function drawScene() {
         animate();
-
+        let worldMatrix;
         utils.resizeCanvasToDisplaySize(gl.canvas);
         gl.clearColor(36 / 255, 206 / 255, 1, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         for (let i = 0; i < 2; i++) {
             if (i === 1) {
                 worldMatrix = landscape.worldMatrix;
-            }
 
+            }
             if (i === 0) {
 
                 if (frames && frames.length > 0 && animationIndex + 1 > 0) {
-                    // console.log("it's channig the ax")
                     worldMatrix = frames[animationIndex][0];
                     ax = frames[animationIndex][1][0];
                     ay = frames[animationIndex][1][1];
                     az = frames[animationIndex][1][2];
-                    // console.log(frames[animationIndex].x)
                 } else {
-                    worldMatrix = utils.MakeWorld(ax, ay, az, rx, ry, rz, 0.05);
+                    worldMatrix = utils.MakeWorld(ax, ay, az, rx, ry, rz, missile.scale);
                 }
 
             }
@@ -299,11 +248,7 @@ function main() {
             gl.uniformMatrix4fv(matrixLocation, gl.FALSE, utils.transposeMatrix(projectionMatrix));
 
             var normalMatrix = utils.invertMatrix(utils.transposeMatrix(viewWorldMatrix));
-            // here when we are creating the matrix location we should consider animation
-            var lightDirMatrix = utils.invertMatrix(utils.transposeMatrix(viewMatrix));//viewMatrix;
-            var lightDirectionTransformed = utils.multiplyMatrix3Vector3(utils.sub3x3from4x4(lightDirMatrix), directionalLight);
-            gl.uniform3fv(lightColorHandle, directionalLightColor);
-            gl.uniform3fv(lightDirectionHandle, lightDirectionTransformed);
+
 
             gl.uniformMatrix4fv(normalMatrixPositionHandle, gl.FALSE, utils.transposeMatrix(normalMatrix));
             for(var uniformArrayIndex = 0; uniformArrayIndex < unifParArray.length; uniformArrayIndex++) {
@@ -339,7 +284,6 @@ async function init() {
     canvas.addEventListener("mouseup", doMouseUp, false);
     canvas.addEventListener("mousemove", doMouseMove, false);
     canvas.addEventListener("mousewheel", doMouseWheel, false);
-    // document.addEventListener("click", startAnimation);
 
     gl = canvas.getContext("webgl2");
     if (!gl) {
@@ -369,72 +313,6 @@ async function init() {
 
 window.onload = init;
 
-document.onkeypress = function (e) {
-
-    // console.log(e.key);
-    if (!isLookAtCamera) {
-        let moveSpeed = 0.1;
-        let radAng = utils.degToRad(ang);
-        switch (e.key) {
-            // camera move forward
-            case 'w':
-            case 'W':
-                cz -= moveSpeed * Math.cos(radAng);
-                cx += moveSpeed * Math.sin(radAng);
-                break;
-
-            // camera move backward
-            case 's':
-            case 'S':
-                cz += moveSpeed * Math.cos(radAng);
-                cx -= moveSpeed * Math.sin(radAng);
-                break;
-
-            // camera move left
-            case 'a':
-            case 'A':
-                cz -= moveSpeed * Math.sin(radAng);
-                cx -= moveSpeed * Math.cos(radAng);
-                break;
-
-            // camera move right
-            case 'd':
-            case 'D':
-                cz += moveSpeed * Math.sin(radAng);
-                cx += moveSpeed * Math.cos(radAng);
-                break;
-
-            // camera move up
-            case 'e':
-            case 'E':
-                cy -= moveSpeed;
-                // ay -= 0.01;
-                break;
-
-            // camera move down
-            case 'q':
-            case 'Q':
-                cy += moveSpeed;
-                // ay += 0.01;
-                break;
-        }
-    } else {
-        switch (e.key) {
-            case '+':
-                r -= 0.1;
-                if (r < minR) {
-                    r += 0.1
-                }
-                break;
-
-            case '-':
-                r += 0.1;
-                break
-        }
-    }
-
-};
-
 /**
  *
  * @param start point [x,y,z]
@@ -445,16 +323,16 @@ document.onkeypress = function (e) {
  * @param s scale
  */
 function parabolicPathCalculator(start, end, duration, steps, s = 0.05, g = 1.0) {
-    let mid = [(start[0] + end[0]) / 2.0, 20, (start[2] + end[2]) / 2.0];
+    let mid = [(start[0] + end[0]) / 2.0, 10, (start[2] + end[2]) / 2.0];
 
     let path = [];
 
 
-    let q1 = null;
-    let q2 = null;
-    let q3 = null;
+    let q1;
+    let q2;
+    let q3;
 
-    let pitch = 0.0;
+    let pitch;
 
     if (start[2] >= end[2]) {
         if (start[0] === end[0]) {
@@ -471,7 +349,7 @@ function parabolicPathCalculator(start, end, duration, steps, s = 0.05, g = 1.0)
     q3 = createQuaternionFromYPR(-90.0, pitch, 0.0);
 
 
-    for (i = 0; i <= steps; i++) {
+    for (let i = 0; i <= steps; i++) {
         let alp = i * 1.0 / steps;
         let q12 = q1.slerp(q2)(alp);
         let q23 = q2.slerp(q3)(alp);
@@ -498,7 +376,7 @@ function parabolicPathCalculator(start, end, duration, steps, s = 0.05, g = 1.0)
         );
 
 
-        path.push([utils.multiplyMatrices(utils.multiplyMatrices(MT, MR), utils.MakeScaleMatrix(s)), translate])
+        path.push([utils.multiplyMatrices(utils.multiplyMatrices(MT, MR), utils.MakeScaleMatrix(missile.scale)), translate])
     }
 
     return path
@@ -519,23 +397,7 @@ function createQuaternionFromYPR(yaw, pitch, roll) {
 
     return new Quaternion(qx, qy, qz, qw);
 }
-let should_animate = false;
-var animationIndex = 0;
-// function startAnimation(event) {
-//     let mousePisitionX;
-//     let mousePisitionY;
-//     mousePisitionX = gl.canvas.width/event.pageX;
-//     mousePisitionY = gl.canvas.height/event.pageY;
-//     if (should_animate) {
-//         frames_to_start = parabolicPathCalculator([ax, ay, az], [mousePisitionX, ay, mousePisitionY], 10, 200);
-//     } else if (should_animate == 1){
-//         ax = mousePisitionX;
-//         ay = mousePisitionY;
-//         az = az;
-//         should_animate = 0;
-//     }
-//     console.log("mouseclicl");
-// }
+
 
 function setIsLookAtCamera(state) {
     isLookAtCamera = state;
@@ -544,138 +406,3 @@ function setIsLookAtCamera(state) {
         elev = -beta;
     }
 }
-// document.addEventListener("click", printMousePos);
-
-// can be [1,0,0,0] for direct or [0,1,0,0] for point
-let lightType = [[1,0,0,0], [0,0,0,0]];
-//each element can be between -250 till 250 we have this for point
-let lightPositionX = [0,0];
-let lightPositionY = [0,0];
-let lightPositionZ = [0,0];
-
-// can be between -180 til 180 we have this for direct
-let lightDirTheta = [90,90];
-let lightDirPhi = [90,90];
-
-// Decay factor can be between 0,2
-let lightDecay = [0,0];
-
-// for light color any hex value which is string is acceptable
-//be careful we are using in different places the value of this color that is why the color
-//is so dense take a look at prof coding everything will be more clear this color is for now
-
-let lightsColor = ["ffffff","ffffff"];
-let ambientLightColor = "ffffff";
-let diffuseColor = "ffffff";
-let specularColor = "ffffff";
-let ambientMatColor = "ffffff";
-
-
-let SpecShine = 200;
-function unifPar(pHTML, pGLSL, type) {
-    this.pHTML = pHTML;
-    this.pGLSL = pGLSL;
-    this.type = type;
-}
-function valType(gl) {
-    let v = []
-    if (this.pHTML == "LBlightType") {
-        v = lightType[1];
-    } else {
-        v = lightType[0];
-    }
-
-    gl.uniform4f(program[this.pGLSL+"Uniform"], v[0], v[1], v[2], v[3]);
-}
-function valVec3(gl) {
-    let lightPositionXs;
-    let lightPositionYs;
-    let lightPositionZs;
-    if (this.pHTML == "LBPos") {
-        lightPositionXs = lightPositionX[1];
-        lightPositionYs = lightPositionY[1];
-        lightPositionZs = lightPositionZ[1];
-    } else {
-        lightPositionXs = lightPositionX[0];
-        lightPositionYs = lightPositionY[0];
-        lightPositionZs = lightPositionZ[0];
-    }
-    gl.uniform3f(program[this.pGLSL+"Uniform"],
-        lightPositionXs,
-        lightPositionYs,
-        lightPositionZs)
-}
-function valDir(gl) {
-    let t;
-    let p;
-    if (this.pHTML == "LBDir") {
-
-        t = utils.degToRad(lightDirTheta[1]);
-        p = utils.degToRad(lightDirPhi[1]);
-    } else  {
-        t = utils.degToRad(lightDirTheta[0]);
-        p = utils.degToRad(lightDirPhi[0]);
-    }
-    gl.uniform3f(program[this.pGLSL+"Uniform"],Math.sin(t)*Math.sin(p), Math.cos(t), Math.sin(t)*Math.cos(p));
-}
-
-function val(gl) {
-    let value;
-    if (this.pHTML == "LBDecay") {
-        value = lightDecay[1];
-
-    } else if (this.pHTML == "LADecay") {
-        value = lightDecay[0];
-    } else {
-        value = SpecShine
-    }
-
-        gl.uniform1f(program[this.pGLSL+"Uniform"], value);
-}
-
-function valCol(gl) {
-    let lightColor = "fffffff";
-    if (this.pHTML == "LBlightColor"){
-        lightColor = lightsColor[1];
-
-    } else if (this.pHTML == "LAlightColor") {
-        lightColor = lightsColor[0];
-    }else if (this.pHTML == "ambientLightColor") {
-        lightColor = ambientLightColor;
-    } else if (this.pHTML == "diffuseColor") {
-        lightColor = diffuseColor;
-    } else if (this.pHTML == "specularColor")
-    {
-        lightColor = specularColor;
-    } else {
-        lightColor = ambientMatColor;
-    }
-    let col = lightColor;
-    let R = parseInt(col.substring(0,2) ,16) / 255;
-    let G = parseInt(col.substring(2,4) ,16) / 255;
-    let B = parseInt(col.substring(4,6) ,16) / 255;
-    gl.uniform4f(program[this.pGLSL+"Uniform"], R, G, B, 1);
-}
-
-unifParArray =[
-
-
-    new unifPar("LAlightType","LAlightType", valType),
-    new unifPar("LAPos","LAPos", valVec3),
-    new unifPar("LADir","LADir", valDir),
-    new unifPar("LADecay","LADecay", val),
-    new unifPar("LAlightColor","LAlightColor", valCol),
-
-    new unifPar("LBlightType","LBlightType", valType),
-    new unifPar("LBPos","LBPos", valVec3),
-    new unifPar("LBDir","LBDir", valDir),
-    new unifPar("LADecay","LADecay", val),
-    new unifPar("LBlightColor","LBlightColor", valCol),
-
-    new unifPar("ambientLightColor","ambientLightColor", valCol),
-    new unifPar("diffuseColor","diffuseColor", valCol),
-    new unifPar("specularColor","specularColor", valCol),
-    new unifPar("ambientMatColor","ambientMatColor", valCol),
-    new unifPar("SpecShine","SpecShine", val),
-
-];
