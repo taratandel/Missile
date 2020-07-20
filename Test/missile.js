@@ -2,35 +2,41 @@ function changeCameraState(state) {
     setIsLookAtCamera(state);
     if (state) {
         $("#free-view-help").slideUp();
-        setTimeout(function () {$("#look-at-help").slideDown();}, 500);
+        setTimeout(function () {
+            $("#look-at-help").slideDown();
+        }, 500);
     } else {
-        setTimeout(function () {$("#free-view-help").slideDown();}, 500);
+        setTimeout(function () {
+            $("#free-view-help").slideDown();
+        }, 500);
         $("#look-at-help").slideUp();
     }
 }
 
 function changeLightColor() {
-    setLightsColor($('#light-color').val())
+    lightsColor[getLightType()] = getColorNumber($('#light-color').val())
 }
+
 function setAmbientLightColor() {
-    ambientLightColor = $('#ambient-color').val()
+    ambientLightColor = getColorNumber($('#ambient-color').val())
 }
 
 function setDiffuseColor() {
-    diffuseColor = $('#diffuse-color').val()
+    diffuseColor = getColorNumber($('#diffuse-color').val())
 }
 
 function setSpecularColor() {
-    specularColor = $('#specular-color').val()
+    specularColor = getColorNumber($('#specular-color').val())
 }
 
 function setAmbientMatColor() {
-    ambientMatColor = $('#ambient-mat-color').val()
+    ambientMatColor = getColorNumber($('#ambient-mat-color').val())
 }
 
 function setSpecShine() {
     SpecShine = $('#specular-shiny').val()
 }
+
 function changeLightPositionPoint() {
     lightPositionX[getLightType()] = $("#point-light-position-x").val();
     lightPositionY[getLightType()] = $("#point-light-position-y").val();
@@ -42,32 +48,50 @@ function changeLightPositionDirect() {
     lightDirPhi[getLightType()] = $("#direct-light-position-phi").val();
     lightDirTheta[getLightType()] = $("#direct-light-position-theta").val();
 }
-let lightsType = [1,0,0,0];
+
+let lastLightTypeSelected = 0;
+
 function changeToDirectLight() {
     $("#point-pane").slideUp();
-    setTimeout(function () {$("#direct-pane").slideDown()}, 500);
+    setTimeout(function () {
+        $("#direct-pane").slideDown()
+    }, 500);
 
-    lightsType = [1, 0, 0, 0];
-    getLightsArray();
+    lastLightTypeSelected = 0;
+    if(getLightEnableStatus()) {
+        lightType[getLightType()] = [1, 0 , 0, 0];
+    } else {
+        lightType[getLightType()] = [0, 0 , 0, 0];
+    }
+    // lastLightType = [1, 0, 0, 0];
+    // getLightsArray();
 
 }
 
 function changeToPointLight() {
     $("#direct-pane").slideUp();
-    setTimeout(function () {$("#point-pane").slideDown()}, 500);
+    setTimeout(function () {
+        $("#point-pane").slideDown()
+    }, 500);
 
-    lightsType = [1, 0, 0, 0];
-    getLightsArray();
+    lastLightTypeSelected = 1;
+    if(getLightEnableStatus()) {
+        lightType[getLightType()] = [0, 1 , 0, 0];
+    } else {
+        lightType[getLightType()] = [0, 0 , 0, 0];
+    }
+    // lastLightType = [0, 1, 0, 0];
+    // getLightsArray();
 
 }
 
 function changeLightDecay() {
-    lightDecay[getLightType()] = $("#point-pane").val();
+    lightDecay[getLightType()] = $("#light-decay").val();
 }
 
 function toggleAnimationState() {
     should_animate = !should_animate;
-    if(should_animate) {
+    if (should_animate) {
         playAnimationChange();
     } else {
         pauseAnimationChange();
@@ -75,7 +99,7 @@ function toggleAnimationState() {
 }
 
 function resetAnimationState() {
-    if(should_animate) {
+    if (should_animate) {
         pauseAnimationChange();
     }
     should_animate = false;
@@ -95,11 +119,12 @@ function pauseAnimationChange() {
 }
 
 function triggerKeyPress(keyVal) {
-    $.event.trigger({ type : 'keypress', key: keyVal });
+    $.event.trigger({type: 'keypress', key: keyVal});
 }
 
 function lightChange() {
-    getLightsArray()
+    // getLightsArray();
+    restoreLightParameters(getLightType())
 
 }
 
@@ -108,11 +133,11 @@ function getLightType() {
 }
 
 function lightEnableChange() {
-    getLightsArray()
+    getLightsArray();
 }
 
 function getLightEnableStatus() {
-    return  $("#enable-checkbox").prop("checked")
+    return $("#enable-checkbox").prop("checked")
 }
 
 
@@ -121,21 +146,64 @@ function setLightEnableState(state) {
 }
 
 function getLightsArray() {
+    if (getLightEnableStatus()) {
+        switch (lastLightTypeSelected) {
+            case 0:
+                lightType[getLightType()] = [1, 0, 0, 0];
+                break;
+            case 1:
+                lightType[getLightType()] = [0, 1, 0, 0];
+                break;
+        }
 
-    if (getLightType() == 0 && !getLightEnableStatus()) {
-        lightType[0] = [0, 0, 0, 0];
-    }
-    else if (getLightType() == 0 && getLightEnableStatus() ) {
-        lightType[0] = lightsType;
-    }
-    if (getLightType() == 1 && getLightEnableStatus()) {
-        lightType[1] = lightsType;
-    }
-    else if (getLightType() == 1 && !getLightEnableStatus()) {
-        lightType[1] = [0,0,0,0]
+    } else {
+        lightType[getLightType()] = [0, 0, 0, 0];
     }
 }
-function setLightsColor(color, type) {
 
-    lightsColor[getLightType()] = color.substr(1);
+function getColorNumber(color) {
+    return color.substr(1);
+}
+
+function restoreLightParameters(lightNo) {
+    // restore the light color
+    $('#light-color').val(`#${lightsColor[lightNo]}`);
+
+    // direction of the point light
+    $("#point-light-position-x").val(lightPositionX[lightNo]);
+    $("#point-light-position-y").val(lightPositionY[lightNo]);
+    $("#point-light-position-z").val(lightPositionZ[lightNo]);
+
+    // fdecay of point light
+    $("#light-decay").val(lightDecay[lightNo]);
+
+    // direction of the direct light
+    $("#direct-light-position-phi").val(lightDirPhi[lightNo]);
+    $("#direct-light-position-theta").val(lightDirTheta[lightNo]);
+
+    // restore the enable checkbox and light type
+    console.log(lightNo, lightType[lightNo]);
+    if ((lightType[lightNo][0] + lightType[lightNo][1]) === 0) {
+        setLightEnableState(false);
+
+    } else if (lightType[lightNo][0] === 1) {
+        setLightEnableState(true);
+
+        $("#direct-light").prop("checked", true);
+        $("#point-light").prop("checked", false);
+
+        if(lastLightTypeSelected === 1) {
+            changeToDirectLight();
+        }
+
+    } else if (lightType[lightNo][1] === 1) {
+        setLightEnableState(true);
+
+        $("#direct-light").prop("checked", false);
+        $("#point-light").prop("checked", true);
+
+        if(lastLightTypeSelected === 0) {
+            changeToPointLight();
+        }
+    }
 }

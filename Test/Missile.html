@@ -77,6 +77,11 @@
         <option value="0">A</option>
         <option value="1">B</option>
     </select>
+    <div class="row" style="display: inline-block">
+        <div class="checkbox">
+            <label>Enable <input id="enable-checkbox" type="checkbox" onchange="lightEnableChange()" checked> </label>
+        </div>
+    </div>
     <br/>
     <div id="light-type-menu" class="btn-group btn-group-toggle" data-toggle="buttons">
         <label class="btn btn-primary active">
@@ -141,7 +146,7 @@
 
         <div class="row" style="margin-top: 5px">
             <label for="ambient-color">Ambient Color</label>
-            <input type="color" id="ambient-color" class="color-select" oninput="setAmbientLightColor()" value="#000000">
+            <input type="color" id="ambient-color" class="color-select" oninput="setAmbientLightColor()" value="#FFFFFF">
         </div>
 
         <div class="row" style="margin-top: 5px">
@@ -166,12 +171,7 @@
                    oninput="setSpecShine()" value="0">
         </div>
 
-        <label class="parent-label">Light on/off</label>
-        <div class="row">
-            <div class="checkbox">
-                <label>Enable <input id="enable-checkbox" type="checkbox" onchange="lightEnableChange()" checked> </label>
-            </div>
-        </div>
+<!--        <label class="parent-label">Light on/off</label>-->
 
     </div>
 

@@ -558,7 +558,7 @@ let lightDirTheta = [90,90];
 let lightDirPhi = [90,90];
 
 // Decay factor can be between 0,2
-let lightDecay = [2,0];
+let lightDecay = [0,0];
 
 // for light color any hex value which is string is acceptable
 //be careful we are using in different places the value of this color that is why the color
