@@ -189,18 +189,24 @@ function restoreLightParameters(lightNo) {
     } else if (lightType[lightNo][0] === 1) {
         setLightEnableState(true);
 
-        $("#direct-light").prop("checked", true);
-        $("#point-light").prop("checked", false);
-
         if(lastLightTypeSelected === 1) {
             changeToDirectLight();
+
+            $("#direct-light").prop("checked", true);
+            $("#direct-light").parent().addClass("active");
+
+            $("#point-light").prop("checked", false);
+            $("#point-light").parent().removeClass("active");
         }
 
     } else if (lightType[lightNo][1] === 1) {
         setLightEnableState(true);
 
         $("#direct-light").prop("checked", false);
+        $("#direct-light").parent().removeClass("active");
+
         $("#point-light").prop("checked", true);
+        $("#point-light").parent().addClass("active");
 
         if(lastLightTypeSelected === 0) {
             changeToPointLight();
