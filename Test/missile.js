@@ -92,6 +92,9 @@ function changeLightDecay() {
 function toggleAnimationState() {
     should_animate = !should_animate;
     if (should_animate) {
+        if(animationIndex + 1 === frames.length) {
+            animationIndex = 0;
+        }
         playAnimationChange();
     } else {
         pauseAnimationChange();

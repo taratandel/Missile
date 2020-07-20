@@ -225,7 +225,7 @@ function main() {
     drawScene();
 
 
-    var frames = parabolicPathCalculator([ax, ay, az], [0.0, 0.0, -10.0], 10, 200);
+    frames = parabolicPathCalculator([ax, ay, az], [0.0, 0.0, -10.0], 10, 200);
 
 
     function animate() {
