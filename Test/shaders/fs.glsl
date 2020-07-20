@@ -27,6 +27,8 @@ uniform vec4 ambientLightColor;
 uniform vec4 diffuseColor;
 uniform vec4 specularColor;
 uniform vec4 ambientMatColor;
+uniform float SpecShine;
+
 
 
 vec3 compLightDir(vec3 LPos, vec3 LDir, vec4 lightType) {
@@ -45,7 +47,7 @@ vec4 compLightColor(vec4 lightColor, float LDecay, vec3 LPos, vec3 LDir, vec4 li
 
   //lights
   // -> Point
-  vec4 pointLightCol = lightColor;
+  vec4 pointLightCol = lightColor * pow(2.5 / length(LPos - fs_pos), LDecay);
   // -> Direct
   vec4 directLightCol = lightColor;
 
@@ -98,8 +100,7 @@ void main() {
   vec4 ambColor = ambientMatColor * 0.1 + texcol * 0.9;
 
   vec3 normalVec = normalize(fs_norm);
-  vec3 eyedirVec = normalize(eyePos - fs_pos);
-
+  vec3 eyedirVec = normalVec;
   //lights
   vec3 LAlightDir = compLightDir(LAPos, LADir, LAlightType);
   vec4 LAlightCol = compLightColor(LAlightColor,  LADecay, LAPos, LADir, LAlightType);
@@ -113,7 +114,7 @@ void main() {
 
   // Specular
   vec4 specular = compSpecular(LAlightDir, LAlightCol, normalVec, eyedirVec) +
-  compSpecular(LBlightDir, LBlightCol, normalVec, eyedirVec);
+  compSpecular(LBlightDir, LBlightCol, normalVec, normalVec);
 
   // Ambient
   vec4 ambient = compAmbient(ambColor, normalVec);

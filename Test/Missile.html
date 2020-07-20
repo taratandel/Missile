@@ -141,24 +141,29 @@
 
         <div class="row" style="margin-top: 5px">
             <label for="ambient-color">Ambient Color</label>
-            <input type="color" id="ambient-color" class="color-select" oninput="changeLightColor()" value="#000000">
+            <input type="color" id="ambient-color" class="color-select" oninput="setAmbientLightColor()" value="#000000">
         </div>
 
         <div class="row" style="margin-top: 5px">
             <label for="diffuse-color">Diffuse Color</label>
-            <input type="color" id="diffuse-color" class="color-select" oninput="changeLightColor()" value="#FFFFFF">
+            <input type="color" id="diffuse-color" class="color-select" oninput="setDiffuseColor()" value="#FFFFFF">
         </div>
 
         <div class="row" style="margin-top: 5px">
             <label for="ambient-mat-color">Ambient Mat. Color</label>
-            <input type="color" id="ambient-mat-color" class="color-select" oninput="changeLightColor()" value="#FFFFFF">
+            <input type="color" id="ambient-mat-color" class="color-select" oninput="setAmbientMatColor()" value="#FFFFFF">
+        </div>
+
+        <div class="row" style="margin-top: 5px">
+            <label for="specular-color">Ambient Mat. Color</label>
+            <input type="color" id="specular-color" class="color-select" oninput="setSpecularColor()" value="#FFFFFF">
         </div>
 
         <label class="parent-label">Specular shiny</label>
         <div class="row">
             <label for="specular-shiny">&gamma;</label>
             <input type="range" min="0" max="100" class="form-control-range" id="specular-shiny"
-                   oninput="" value="0">
+                   oninput="setSpecShine()" value="0">
         </div>
 
         <label class="parent-label">Light on/off</label>

@@ -10,18 +10,37 @@ function changeCameraState(state) {
 }
 
 function changeLightColor() {
-    setLightsColor($('#light-color').val(), )
+    setLightsColor($('#light-color').val())
+}
+function setAmbientLightColor() {
+    ambientLightColor = $('#ambient-color').val()
 }
 
+function setDiffuseColor() {
+    diffuseColor = $('#diffuse-color').val()
+}
+
+function setSpecularColor() {
+    specularColor = $('#specular-color').val()
+}
+
+function setAmbientMatColor() {
+    ambientMatColor = $('#ambient-mat-color').val()
+}
+
+function setSpecShine() {
+    SpecShine = $('#specular-shiny').val()
+}
 function changeLightPositionPoint() {
-    lightPositionX = $("#point-light-position-x").val();
-    lightPositionY = $("#point-light-position-y").val();
-    lightPositionZ = $("#point-light-position-z").val();
+    lightPositionX[getLightType()] = $("#point-light-position-x").val();
+    lightPositionY[getLightType()] = $("#point-light-position-y").val();
+    lightPositionZ[getLightType()] = $("#point-light-position-z").val();
 }
 
 function changeLightPositionDirect() {
-    lightDirPhi = $("#direct-light-position-phi").val();
-    lightDirTheta = $("#direct-light-position-theta").val();
+
+    lightDirPhi[getLightType()] = $("#direct-light-position-phi").val();
+    lightDirTheta[getLightType()] = $("#direct-light-position-theta").val();
 }
 let lightsType = [1,0,0,0];
 function changeToDirectLight() {
@@ -43,7 +62,7 @@ function changeToPointLight() {
 }
 
 function changeLightDecay() {
-    lightDecay[0] = $("#point-pane").val();
+    lightDecay[getLightType()] = $("#point-pane").val();
 }
 
 function toggleAnimationState() {
@@ -92,7 +111,7 @@ function lightEnableChange() {
     getLightsArray()
 }
 
-function getlightEnableStatus() {
+function getLightEnableStatus() {
     return  $("#enable-checkbox").prop("checked")
 }
 
@@ -103,16 +122,20 @@ function setLightEnableState(state) {
 
 function getLightsArray() {
 
-    if (getLightType() == 0 && !getlightEnableStatus()) {
+    if (getLightType() == 0 && !getLightEnableStatus()) {
         lightType[0] = [0, 0, 0, 0];
     }
-    else if (getLightType() == 0 && getlightEnableStatus() ) {
+    else if (getLightType() == 0 && getLightEnableStatus() ) {
         lightType[0] = lightsType;
     }
-    if (getLightType() == 1 && getlightEnableStatus()) {
+    if (getLightType() == 1 && getLightEnableStatus()) {
         lightType[1] = lightsType;
     }
-    else if (getLightType() == 1 && !getlightEnableStatus()) {
+    else if (getLightType() == 1 && !getLightEnableStatus()) {
         lightType[1] = [0,0,0,0]
     }
+}
+function setLightsColor(color, type) {
+
+    lightsColor[getLightType()] = color.substr(1);
 }

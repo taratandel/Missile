@@ -35,7 +35,7 @@ var dirLightAlpha = -utils.degToRad(60);
 var dirLightBeta = -utils.degToRad(120);
 // modify the light direction
 var directionalLight = [Math.cos(dirLightAlpha) * Math.cos(dirLightBeta),
-    Math.sin(dirLightAlpha),z
+    Math.sin(dirLightAlpha),
     Math.cos(dirLightAlpha) * Math.sin(dirLightBeta)
 ];
 
@@ -549,13 +549,13 @@ function setIsLookAtCamera(state) {
 // can be [1,0,0,0] for direct or [0,1,0,0] for point
 let lightType = [[1,0,0,0], [0,0,0,0]];
 //each element can be between -250 till 250 we have this for point
-let lightPositionX = 0;
-let lightPositionY = 0;
-let lightPositionZ = 0;
+let lightPositionX = [0,0];
+let lightPositionY = [0,0];
+let lightPositionZ = [0,0];
 
 // can be between -180 til 180 we have this for direct
-let lightDirTheta = 90;
-let lightDirPhi = 90;
+let lightDirTheta = [90,90];
+let lightDirPhi = [90,90];
 
 // Decay factor can be between 0,2
 let lightDecay = [2,0];
@@ -584,19 +584,38 @@ function valType(gl) {
     } else {
         v = lightType[0];
     }
-    console.log(v);
+
     gl.uniform4f(program[this.pGLSL+"Uniform"], v[0], v[1], v[2], v[3]);
 }
 function valVec3(gl) {
+    let lightPositionXs;
+    let lightPositionYs;
+    let lightPositionZs;
+    if (this.pHTML == "LBPos") {
+        lightPositionXs = lightPositionX[1];
+        lightPositionYs = lightPositionY[1];
+        lightPositionZs = lightPositionZ[1];
+    } else {
+        lightPositionXs = lightPositionX[0];
+        lightPositionYs = lightPositionY[0];
+        lightPositionZs = lightPositionZ[0];
+    }
     gl.uniform3f(program[this.pGLSL+"Uniform"],
-        lightPositionX,
-        lightPositionY,
-        lightPositionZ)
+        lightPositionXs,
+        lightPositionYs,
+        lightPositionZs)
 }
 function valDir(gl) {
+    let t;
+    let p;
+    if (this.pHTML == "LBDir") {
 
-    let t = utils.degToRad(lightDirTheta);
-    let p = utils.degToRad(lightDirPhi);
+        t = utils.degToRad(lightDirTheta[1]);
+        p = utils.degToRad(lightDirPhi[1]);
+    } else  {
+        t = utils.degToRad(lightDirTheta[0]);
+        p = utils.degToRad(lightDirPhi[0]);
+    }
     gl.uniform3f(program[this.pGLSL+"Uniform"],Math.sin(t)*Math.sin(p), Math.cos(t), Math.sin(t)*Math.cos(p));
 }
 
@@ -660,8 +679,3 @@ unifParArray =[
     new unifPar("SpecShine","SpecShine", val),
 
 ];
-
-function setLightsColor(color, type) {
-
-    lightsColor = color.substr(1);
-}
