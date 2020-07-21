@@ -22,7 +22,7 @@ let missile = {
     scale: 0.02,
     worldMatrix: utils.MakeWorld(0.0, 0.0, 4.5, 0.0, -90.0, 0.0, self.scale),
     obj: null,
-    texture: null,
+    texture: 0,
 };
 
 let landscape = {
@@ -30,7 +30,7 @@ let landscape = {
     texturePath: 'Models/Landscape/ground_grass_3264_4062_Small.jpg',
     worldMatrix: utils.MakeWorld(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0),
     obj: null,
-    texture: null,
+    texture: 1,
 };
 
 
@@ -100,83 +100,30 @@ function main() {
     vaos[0] = gl.createVertexArray();
     gl.bindVertexArray(vaos[0]);
 
-    var positionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(missile.obj.getVertices()), gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(positionAttributeLocation);
-    gl.vertexAttribPointer(positionAttributeLocation, 3, gl.FLOAT, false, 0, 0);
-
-    var uvBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(missile.obj.getTextureCoord()), gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(uvAttributeLocation);
-    gl.vertexAttribPointer(uvAttributeLocation, 2, gl.FLOAT, false, 0, 0);
-
-    var indexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(missile.obj.getIndices()), gl.STATIC_DRAW);
-
-    var normalBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(missile.obj.getVertexNormals()), gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(norm);
-    gl.vertexAttribPointer(norm, 3, gl.FLOAT, false, 0, 0);
+    createPositionBuffer(missile,positionAttributeLocation);
+    createUvBuffer(missile, uvAttributeLocation);
+    createIndexBuffer(missile);
+    createNormalBuffer(missile, norm);
 
     textures[0] = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, textures[0]);
 
-    var image2 = new Image();
-    image2.src = baseDir + missile.texturePath;
-    image2.onload = function () {
-        gl.bindTexture(gl.TEXTURE_2D, textures[0]);
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image2);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        gl.generateMipmap(gl.TEXTURE_2D);
-    };
+    setImage(missile);
 
 
     // bind mount to its array
     vaos[1] = gl.createVertexArray();
     gl.bindVertexArray(vaos[1]);
 
-    var positionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(landscape.obj.getVertices()), gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(positionAttributeLocation);
-    gl.vertexAttribPointer(positionAttributeLocation, 3, gl.FLOAT, false, 0, 0);
-
-    var uvBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(landscape.obj.getTextureCoord()), gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(uvAttributeLocation);
-    gl.vertexAttribPointer(uvAttributeLocation, 2, gl.FLOAT, false, 0, 0);
-
-    var indexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(landscape.obj.getIndices()), gl.STATIC_DRAW);
-
-    var normalBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(landscape.obj.getVertexNormals()), gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(norm);
-    gl.vertexAttribPointer(norm, 3, gl.FLOAT, false, 0, 0);
-
+    createPositionBuffer(landscape, positionAttributeLocation);
+    createUvBuffer(landscape, uvAttributeLocation)
+    createIndexBuffer(landscape)
+    createNormalBuffer(landscape, norm);
 
     textures[1] = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, textures[1]);
 
-    var image = new Image();
-    image.src = baseDir + landscape.texturePath;
-    image.onload = function () {
-        gl.bindTexture(gl.TEXTURE_2D, textures[1]);
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        gl.generateMipmap(gl.TEXTURE_2D);
-    };
+    setImage(landscape)
     drawScene();
 
 
@@ -406,3 +353,5 @@ function setIsLookAtCamera(state) {
         elev = -beta;
     }
 }
+
+
