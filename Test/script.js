@@ -11,6 +11,7 @@ let textures = [];
 // camera positions
 let cx = 0.02, cy = 0.13, cz = 4.3, elev = 0.0, ang = 0.0;
 let lookRadius = 10.0;
+let viewMatrix = null;
 
 let isLookAtCamera = true;
 let animationIndex = 0;
@@ -173,7 +174,7 @@ function main() {
             }
 
             // make the camera view
-            var viewMatrix = null;
+
             if (isLookAtCamera) {
                 cx = ax + r * Math.sin(utils.degToRad(alpha)) * Math.cos(utils.degToRad(beta));
                 cz = az + r * Math.cos(utils.degToRad(alpha)) * Math.cos(utils.degToRad(beta));

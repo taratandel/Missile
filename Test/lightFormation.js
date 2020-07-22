@@ -67,8 +67,15 @@ function valDir(gl) {
     } else  {
         t = utils.degToRad(lightDirTheta[0]);
         p = utils.degToRad(lightDirPhi[0]);
-    }
-    gl.uniform3f(program[this.pGLSL+"Uniform"],Math.sin(t)*Math.sin(p), Math.cos(t), Math.sin(t)*Math.cos(p));
+    }    let directionalLight = [Math.sin(t)*Math.sin(p),
+        Math.cos(t),
+        Math.sin(t)*Math.cos(p)
+    ];
+    let lightDirMatrix = utils.invertMatrix(utils.transposeMatrix(viewMatrix));//viewMatrix;
+    let lightDirectionTransformed = utils.multiplyMatrix3Vector3(utils.sub3x3from4x4(lightDirMatrix),directionalLight);
+
+    gl.uniform3fv(program[this.pGLSL+"Uniform"],lightDirectionTransformed);
+    // gl.uniform3f(program[this.pGLSL+"Uniform"],Math.sin(t)*Math.sin(p), Math.cos(t), Math.sin(t)*Math.cos(p));
 }
 
 function val(gl) {
