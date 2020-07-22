@@ -52,10 +52,11 @@ function valVec3(gl) {
         lightPositionYs = lightPositionY[0];
         lightPositionZs = lightPositionZ[0];
     }
-    gl.uniform3f(program[this.pGLSL+"Uniform"],
-        lightPositionXs,
-        lightPositionYs,
-        lightPositionZs)
+    let pointLight = [lightPositionXs, lightPositionYs, lightPositionZs]
+    let lightPosMatrix = utils.invertMatrix(utils.transposeMatrix(viewMatrix));//viewMatrix;
+    let lightPositionTransformed = utils.multiplyMatrix3Vector3(utils.sub3x3from4x4(lightPosMatrix),pointLight);
+    gl.uniform3fv(program[this.pGLSL+"Uniform"],
+        lightPositionTransformed)
 }
 function valDir(gl) {
     let t;
