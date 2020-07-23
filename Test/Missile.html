@@ -99,15 +99,15 @@
             <label class="parent-label">Light Direction</label>
             <div>
                 <div class="row">
-                    <label for="point-light-position-x">Φ</label>
+                    <label for="direct-light-position-phi">Φ</label>
                     <input type="range" min="0" max="360" class="form-control-range" id="direct-light-position-phi"
-                           oninput="changeLightPositionDirect()" value="0">
+                           oninput="changeLightPositionDirect()" value="90">
                 </div>
 
                 <div class="row">
-                    <label for="point-light-position-y">θ</label>
+                    <label for="direct-light-position-theta">θ</label>
                     <input type="range" min="0" max="360" class="form-control-range" id="direct-light-position-theta"
-                           oninput="changeLightPositionDirect()" value="0">
+                           oninput="changeLightPositionDirect()" value="90">
                 </div>
             </div>
         </div>
@@ -169,8 +169,8 @@
         <label class="parent-label">Specular shiny</label>
         <div class="row">
             <label for="specular-shiny">&gamma;</label>
-            <input type="range" min="0" max="100" class="form-control-range" id="specular-shiny"
-                   oninput="setSpecShine()" value="0">
+            <input type="range" min="1" max="200" class="form-control-range" id="specular-shiny"
+                   oninput="setSpecShine()" value="200">
         </div>
 
 <!--        <label class="parent-label">Light on/off</label>-->
