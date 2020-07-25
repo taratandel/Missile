@@ -14,14 +14,16 @@ let lookRadius = 10.0;
 let viewMatrix = null;
 
 let isLookAtCamera = true;
-let animationIndex = 0;
 
+// missile position
 let rx = 0.0, ry = -90.0, rz = 0.0;
+let ax = 0.0, ay = 0.102, az = 4.1;
+
 let missile = {
     objPath: 'Models/Missile2/R73-Ready.obj',
     texturePath: 'Models/Missile2/R73_Texture.png',
     scale: 0.02,
-    worldMatrix: utils.MakeWorld(0.0, 0.0, 4.5, 0.0, -90.0, 0.0, self.scale),
+    worldMatrix: utils.MakeWorld(ax, ay, az, rx, ry, rz, self.scale),
     obj: null,
     texture: 0,
 };
@@ -34,24 +36,26 @@ let landscape = {
     texture: 1,
 };
 
+// animation
+let should_animate = false;
+let frames;
+let animationIndex = 0;
 
-
-
-// missile position
-let ax = 0.0, ay = 0.102, az = 4.1;
-let frames, frames_to_start;
+// camera rotation in look at view
 let alpha = 0.0, beta = 0.0, r = Math.abs(cz - az), minR = 0.2;
 
 // event handler
 let mouseState = false;
 let lastMouseX = -100, lastMouseY = -100;
 
-//animation
-let should_animate = false;
 
-
-
-
+/**
+ * for look at view matrix (3rd person)
+ * @param objPosition
+ * @param camPosition
+ * @param uy up vector
+ * @returns view matrix for 3rd person look at view
+ */
 function createViewMatrix(objPosition, camPosition, uy) {
     let c = camPosition;
     let a = objPosition;
@@ -65,7 +69,7 @@ function createViewMatrix(objPosition, camPosition, uy) {
 
     let vy = utils.crossVector(vzn, vxn);
 
-    var Mc = [vxn[0], vy[0], vzn[0], c[0],
+    let Mc = [vxn[0], vy[0], vzn[0], c[0],
         vxn[1], vy[1], vzn[1], c[1],
         vxn[2], vy[2], vzn[2], c[2],
         0, 0, 0, 1];
@@ -73,17 +77,21 @@ function createViewMatrix(objPosition, camPosition, uy) {
     return utils.invertMatrix(Mc);
 }
 
+
 function main() {
 
     let lastUpdateTime = (new Date).getTime();
 
+    // initial canvas size and attribute
     utils.resizeCanvasToDisplaySize(gl.canvas);
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
     gl.clearColor(0.85, 1.0, 0.85, 1.0);
+
+    // enable depth test (do not show what you cannot see)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.enable(gl.DEPTH_TEST);
 
-
+    // get GLSL variables
     let positionAttributeLocation = gl.getAttribLocation(program, "a_position");
     let uvAttributeLocation = gl.getAttribLocation(program, "a_uv");
     let matrixLocation = gl.getUniformLocation(program, "matrix");
@@ -95,7 +103,6 @@ function main() {
     }
 
     let perspectiveMatrix = utils.MakePerspective(70, gl.canvas.width / gl.canvas.height, 0.1, 100.0);
-    gl.enable(gl.DEPTH_TEST)
 
     // bind missile to its array
     vaos[0] = gl.createVertexArray();
@@ -124,15 +131,16 @@ function main() {
     textures[1] = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, textures[1]);
 
-    setImage(landscape)
+    setImage(landscape);
+
+    // calculate the animation frames
+    frames = parabolicPathCalculator([ax, ay, az], [1.28, 1.76, -0.35], 200, missile.scale);
+
     drawScene();
 
 
-    frames = parabolicPathCalculator([ax, ay, az], [1.28, 1.76, -0.35], 10, 200);
-
-
     function animate() {
-        var currentTime = (new Date).getTime();
+        let currentTime = (new Date).getTime();
 
         if (!frames) {
             return;
@@ -156,11 +164,11 @@ function main() {
         gl.clearColor(36 / 255, 206 / 255, 1, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         for (let i = 0; i < 2; i++) {
-            if (i === 1) {
+            if (i === 1) { // mount
                 worldMatrix = landscape.worldMatrix;
 
             }
-            if (i === 0) {
+            if (i === 0) { // missile
 
                 if (frames && frames.length > 0 && animationIndex + 1 > 0) {
                     worldMatrix = frames[animationIndex][0];
@@ -174,18 +182,17 @@ function main() {
             }
 
             // make the camera view
-
-            if (isLookAtCamera) {
+            if (isLookAtCamera) { // 3rd person
                 cx = ax + r * Math.sin(utils.degToRad(alpha)) * Math.cos(utils.degToRad(beta));
                 cz = az + r * Math.cos(utils.degToRad(alpha)) * Math.cos(utils.degToRad(beta));
                 cy = ay + r * Math.sin(utils.degToRad(beta));
                 var uy = 1;
-                if (Math.cos(utils.degToRad(beta)) < 0) {
+                if (Math.cos(utils.degToRad(beta)) < 0) { // now the mount can show on the top
                     uy = -1;
                 }
 
                 viewMatrix = createViewMatrix([ax, ay, az], [cx, cy, cz], uy);
-            } else {
+            } else { // 1st person
                 viewMatrix = utils.MakeView(cx, cy, cz, elev, ang);
             }
 
@@ -195,13 +202,14 @@ function main() {
 
             gl.uniformMatrix4fv(matrixLocation, gl.FALSE, utils.transposeMatrix(projectionMatrix));
 
+            // normal matrix we translate for camera space
             var normalMatrix = utils.invertMatrix(utils.transposeMatrix(viewWorldMatrix));
-
-
             gl.uniformMatrix4fv(normalMatrixPositionHandle, gl.FALSE, utils.transposeMatrix(normalMatrix));
+
             for(var uniformArrayIndex = 0; uniformArrayIndex < unifParArray.length; uniformArrayIndex++) {
                 unifParArray[uniformArrayIndex].type(gl);
             }
+            // draw texture on each element
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, textures[i]);
             gl.uniform1i(textLocation, 0);
@@ -265,12 +273,10 @@ window.onload = init;
  *
  * @param start point [x,y,z]
  * @param end point [x,y,z]
- * @param duration total animation duration
  * @param steps how many point we must calculate
- * @param g the gravity
  * @param s scale
  */
-function parabolicPathCalculator(start, end, duration, steps, s = 0.05, g = 1.0) {
+function parabolicPathCalculator(start, end, steps, s) {
     let mid = [(start[0] + end[0]) / 2.0, 10, (start[2] + end[2]) / 2.0];
 
     let path = [];
