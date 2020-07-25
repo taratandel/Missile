@@ -1,3 +1,6 @@
+// audio
+let rocket_sound = new Audio('audio/RocketSound.mp3');
+
 function changeCameraState(state) {
     setIsLookAtCamera(state);
     if (state) {
@@ -90,13 +93,16 @@ function changeLightDecay() {
 }
 
 function toggleAnimationState() {
-    should_animate = !should_animate;
-    if (should_animate) {
+    if (!should_animate) {
         if(animationIndex + 1 === frames.length) {
             animationIndex = 0;
+            rocket_sound.currentTime = 0;
+            isFromAToB = !isFromAToB;
         }
+        should_animate = true;
         playAnimationChange();
     } else {
+        should_animate = false;
         pauseAnimationChange();
     }
 }
@@ -107,18 +113,22 @@ function resetAnimationState() {
     }
     should_animate = false;
     animationIndex = 0;
+    rocket_sound.currentTime = 0;
+    rocket_sound.pause();
 }
 
 function playAnimationChange() {
     $("#action-btn").removeClass("btn-success");
     $("#action-btn").addClass("btn-danger");
     $("#action-btn").html("Pause");
+    rocket_sound.play();
 }
 
 function pauseAnimationChange() {
     $("#action-btn").removeClass("btn-danger");
     $("#action-btn").addClass("btn-success");
     $("#action-btn").html("Play");
+    rocket_sound.pause();
 }
 
 function triggerKeyPress(keyVal) {
