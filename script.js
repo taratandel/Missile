@@ -21,7 +21,7 @@ let ax = 0.0, ay = 0.102, az = 4.1;
 
 let missile = {
     objPath: 'Models/Missile2/R73-Ready.obj',
-    texturePath: 'Models/Missile2/R73_Texture.png',
+    texturePath: 'Models/Missile2/ST_Texture.png',
     scale: 0.02,
     worldMatrix: utils.MakeWorld(ax, ay, az, rx, ry, rz, self.scale),
     obj: null,
