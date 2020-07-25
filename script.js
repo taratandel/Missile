@@ -19,6 +19,7 @@ let isLookAtCamera = true;
 let rx = 0.0, ry = -90.0, rz = 0.0;
 let ax = 0.0, ay = 0.102, az = 4.1;
 
+
 let missile = {
     objPath: 'Models/Missile2/R73-Ready.obj',
     texturePath: 'Models/Missile2/R73_Texture.png',
@@ -40,6 +41,7 @@ let landscape = {
 let should_animate = false;
 let frames;
 let animationIndex = 0;
+let pA = [ax, ay, az], pB = [1.28, 1.76, -0.35], isFromAToB = true;
 
 // camera rotation in look at view
 let alpha = 0.0, beta = 0.0, r = Math.abs(cz - az), minR = 0.2;
@@ -134,7 +136,11 @@ function main() {
     setImage(landscape);
 
     // calculate the animation frames
-    frames = parabolicPathCalculator([ax, ay, az], [1.28, 1.76, -0.35], 200, missile.scale);
+    if(isFromAToB) {
+        frames = parabolicPathCalculator(pA, pB, 200, missile.scale);
+    } else {
+        frames = parabolicPathCalculator(pB, pA, 200, missile.scale);
+    }
 
     drawScene();
 
@@ -148,6 +154,13 @@ function main() {
         let deltaC = (30 * (currentTime - lastUpdateTime)) / 1000;
         if(should_animate) {
             if (frames.length > 0 && deltaC > .5 && animationIndex + 1 !== frames.length) {
+                if(animationIndex === 0) {
+                    if(isFromAToB) {
+                        frames = parabolicPathCalculator(pA, pB, 200, missile.scale);
+                    } else {
+                        frames = parabolicPathCalculator(pB, pA, 200, missile.scale);
+                    }
+                }
                 animationIndex = (animationIndex + 1);
             } else if (animationIndex + 1 === frames.length) {
                 should_animate = false;
