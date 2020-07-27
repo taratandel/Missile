@@ -102,4 +102,7 @@ document.onkeypress = function (e) {
         }
     }
 
+    if (e.key === ' ') {
+        toggleAnimationState();
+    }
 };
