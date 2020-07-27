@@ -12,7 +12,7 @@ let textures = [];
 let cx = 0.02, cy = 0.13, cz = 4.3, elev = 0.0, ang = 0.0;
 let lookRadius = 10.0;
 let viewMatrix = null;
-
+let viewWorldMatrix = null
 let isLookAtCamera = true;
 
 // missile position
@@ -94,10 +94,12 @@ function main() {
     gl.enable(gl.DEPTH_TEST);
 
     // get GLSL variables
+    // we don't need to retrive the attributes more than once cause we are using the same program
     let positionAttributeLocation = gl.getAttribLocation(program, "a_position");
     let uvAttributeLocation = gl.getAttribLocation(program, "a_uv");
     let matrixLocation = gl.getUniformLocation(program, "matrix");
     let textLocation = gl.getUniformLocation(program, "u_texture");
+    //retrieve the position of the matrix
     let normalMatrixPositionHandle = gl.getUniformLocation(program, 'nMatrix');
     let norm = gl.getAttribLocation(program, "in_norm");
     for(let unifArrayIndex = 0; unifArrayIndex < unifParArray.length; unifArrayIndex++) {
@@ -179,11 +181,10 @@ function main() {
         for (let i = 0; i < 2; i++) {
             if (i === 1) { // mount
                 worldMatrix = landscape.worldMatrix;
-
             }
             if (i === 0) { // missile
-
                 if (frames && frames.length > 0 && animationIndex + 1 > 0) {
+                    // the world matrix changes each time it's animating
                     worldMatrix = frames[animationIndex][0];
                     ax = frames[animationIndex][1][0];
                     ay = frames[animationIndex][1][1];
@@ -191,7 +192,6 @@ function main() {
                 } else {
                     worldMatrix = utils.MakeWorld(ax, ay, az, rx, ry, rz, missile.scale);
                 }
-
             }
 
             // make the camera view
@@ -209,13 +209,17 @@ function main() {
                 viewMatrix = utils.MakeView(cx, cy, cz, elev, ang);
             }
 
-
-            var viewWorldMatrix = utils.multiplyMatrices(viewMatrix, worldMatrix);
+            // based on the object
+            viewWorldMatrix = utils.multiplyMatrices(viewMatrix, worldMatrix);
             var projectionMatrix = utils.multiplyMatrices(perspectiveMatrix, viewWorldMatrix);
-
+            // we need to set the projection matrix in a uniform
             gl.uniformMatrix4fv(matrixLocation, gl.FALSE, utils.transposeMatrix(projectionMatrix));
 
             // normal matrix we translate for camera space
+            //normal matrix depend on the viewWorld matrix in camera space
+            // inverse transpose will do the translating for us
+            // we have scaling so we need to change
+            //( we could skip the translating for the mountain because we didn't have scaling)
             var normalMatrix = utils.invertMatrix(utils.transposeMatrix(viewWorldMatrix));
             gl.uniformMatrix4fv(normalMatrixPositionHandle, gl.FALSE, utils.transposeMatrix(normalMatrix));
 

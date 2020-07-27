@@ -54,7 +54,11 @@ function valVec3(gl) {
     }
     let pointLight = [lightPositionXs, lightPositionYs, lightPositionZs]
     // translate to camera space
-    let lightPosMatrix = utils.invertMatrix(utils.transposeMatrix(viewMatrix));//viewMatrix;
+    //they are usually expressed in the world space
+    // we have scaling so we need inverse transpose
+    // the light is not changing so we do it once
+    // we just pass the transformed light
+    let lightPosMatrix = utils.invertMatrix(utils.transposeMatrix(viewWorldMatrix));
     let lightPositionTransformed = utils.multiplyMatrix3Vector3(utils.sub3x3from4x4(lightPosMatrix),pointLight);
     gl.uniform3fv(program[this.pGLSL+"Uniform"],
         lightPositionTransformed)
@@ -73,12 +77,16 @@ function valDir(gl) {
         Math.cos(t),
         Math.sin(t)*Math.cos(p)
     ];
+
     // translate to camera space
-    let lightDirMatrix = utils.invertMatrix(utils.transposeMatrix(viewMatrix));//viewMatrix;
+    //they are usually expressed in the world space
+    // we have scaling so we need inverse transpose
+    // the light is not changing so we do it once
+    // we just pass the transformed light
+    let lightDirMatrix = utils.invertMatrix(utils.transposeMatrix(viewWorldMatrix));
     let lightDirectionTransformed = utils.multiplyMatrix3Vector3(utils.sub3x3from4x4(lightDirMatrix),directionalLight);
 
     gl.uniform3fv(program[this.pGLSL+"Uniform"],lightDirectionTransformed);
-    // gl.uniform3f(program[this.pGLSL+"Uniform"],Math.sin(t)*Math.sin(p), Math.cos(t), Math.sin(t)*Math.cos(p));
 }
 
 function val(gl) {

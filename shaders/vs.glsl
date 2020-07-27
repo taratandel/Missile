@@ -16,6 +16,8 @@ uniform mat4 nMatrix;     //matrix to transform normals
 void main() {
   fs_pos = a_position;
   fs_uv = vec2(a_uv.x, a_uv.y);
+//  normals are in local coordinates so we need to translate them to world coordinate
+//  the directions have 3 dimension so we need 3*3 for transformation
   fs_norm = mat3(nMatrix) * in_norm;
   gl_Position = matrix * vec4(a_position, 1.0);
 }

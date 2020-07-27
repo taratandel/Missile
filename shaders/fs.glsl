@@ -72,8 +72,6 @@ vec4 compSpecular(vec3 lightDir, vec4 lightCol, vec3 normalVec, vec3 eyedirVec) 
   float LdotN = max(0.0, dot(normalVec, lightDir));
   vec3 reflection = -reflect(lightDir, normalVec);
   float LdotR = max(dot(reflection, eyedirVec), 0.0);
-  vec3 halfVec = normalize(lightDir + eyedirVec);
-  float HdotN = max(dot(normalVec, halfVec), 0.0);
 
   vec4 LScol = lightCol * specularColor * max(sign(LdotN),0.0);
   // --> Phong
@@ -96,10 +94,11 @@ out vec4 outColor;
 void main() {
   vec4 texcol = texture(u_texture, fs_uv);
 
-  vec4 diffColor = diffuseColor  * 0.1 + texcol * 0.9;
-  vec4 ambColor = ambientMatColor * 0.1 + texcol * 0.9;
-
+  vec4 diffColor = diffuseColor  * 0.2 + texcol * 0.8;
+  vec4 ambColor = ambientMatColor * 0.2 + texcol * 0.8;
+// fs_norm when passed might not be normalized so wee need to normalize it
   vec3 normalVec = normalize(fs_norm);
+//  we just need to the position the vertex position because we are in camera space
   vec3 eyedirVec = normalVec;
   //lights
   vec3 LAlightDir = compLightDir(LAPos, LADir, LAlightType);
