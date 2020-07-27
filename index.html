@@ -1,0 +1,185 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>MIssile</title>
+    <script src="utils.js"></script>
+    <script src="webgl-obj-loader.js"></script>
+    <script src="quaternion.min.js"></script>
+    <script src="Model.js"></script>
+    <script src="setBuffers.js"></script>
+    <script src="script.js"></script>
+
+    <link rel="stylesheet" href="missile.css">
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+          integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+            integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+            crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
+            integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
+            crossorigin="anonymous"></script>
+    <script src="events.js"></script>
+    <script src="lightFormation.js"></script>
+    <script src="missile.js"></script>
+
+</head>
+
+<body style="background-color: grey; margin:0;">
+<canvas id="my-canvas" width="1024" height="768" style="background-color: white;">
+    Your browser doesn't support the Canvas Element!
+</canvas>
+
+<div id="panel">
+
+    <label for="camera-type-menu">Camera</label>
+    <br/>
+    <div id="camera-type-menu" class="btn-group btn-group-toggle" data-toggle="buttons">
+        <label class="btn btn-primary active">
+            <input type="radio" name="options" id="look-at" checked onclick="changeCameraState(true)"> Look At
+        </label>
+        <label class="btn btn-primary">
+            <input type="radio" name="options" id="free-view" onclick="changeCameraState(false)"> Free View
+        </label>
+    </div>
+
+    <div id="free-view-help" class="alert alert-secondary keyboard-help" role="alert">
+        <button type="button" class="btn btn-dark" onclick="triggerKeyPress('w')">W</button>
+        - Move Forward
+        <br/>
+        <button type="button" class="btn btn-dark" onclick="triggerKeyPress('s')">S</button>
+        - Move Backward
+        <br/>
+        <button type="button" class="btn btn-dark" onclick="triggerKeyPress('a')">A</button>
+        - Move Left
+        <br/>
+        <button type="button" class="btn btn-dark" onclick="triggerKeyPress('d')">D</button>
+        - Move Right
+        <br/>
+        <button type="button" class="btn btn-dark" onclick="triggerKeyPress('q')">Q</button>
+        - Move Up
+        <br/>
+        <button type="button" class="btn btn-dark" onclick="triggerKeyPress('e')">E</button>
+        - Move Down
+    </div>
+
+    <div id="look-at-help" class="alert alert-secondary keyboard-help" role="alert">
+        <button type="button" class="btn btn-dark" onclick="triggerKeyPress('+')">+</button>
+        - Zoom In
+        <br/>
+        <button type="button" class="btn btn-dark" onclick="triggerKeyPress('-')">-</button>
+        - Zoom Out
+    </div>
+
+
+    <label for="light-type-menu">Light</label>
+    <select class="form-control" id="light-selector" onchange="lightChange()">
+        <option value="0">A</option>
+        <option value="1">B</option>
+    </select>
+    <div class="row" style="display: inline-block">
+        <div class="checkbox">
+            <label>Enable <input id="enable-checkbox" type="checkbox" onchange="lightEnableChange()" checked> </label>
+        </div>
+    </div>
+    <br/>
+    <div id="light-type-menu" class="btn-group btn-group-toggle" data-toggle="buttons">
+        <label class="btn btn-primary active">
+            <input type="radio" name="options" id="direct-light" checked onclick="changeToDirectLight()"> Direct Light
+        </label>
+        <label class="btn btn-primary">
+            <input type="radio" name="options" id="point-light" onclick="changeToPointLight()"> Point Light
+        </label>
+    </div>
+
+    <div id="light-panel" class="alert alert-secondary" role="alert">
+        <div id="direct-pane">
+            <label class="parent-label">Light Direction</label>
+            <div>
+                <div class="row">
+                    <label for="direct-light-position-phi">Φ</label>
+                    <input type="range" min="0" max="360" class="form-control-range" id="direct-light-position-phi"
+                           oninput="changeLightPositionDirect()" value="90">
+                </div>
+
+                <div class="row">
+                    <label for="direct-light-position-theta">θ</label>
+                    <input type="range" min="0" max="360" class="form-control-range" id="direct-light-position-theta"
+                           oninput="changeLightPositionDirect()" value="90">
+                </div>
+            </div>
+        </div>
+
+        <div id="point-pane" style="display: none">
+            <label class="parent-label">Light Position</label>
+            <div class="row">
+                <label for="point-light-position-x">x</label>
+                <input type="range" min="0" max="20" class="form-control-range" id="point-light-position-x"
+                       oninput="changeLightPositionPoint()" value="0">
+            </div>
+
+            <div class="row">
+                <label for="point-light-position-y">y</label>
+                <input type="range" min="0" max="20" class="form-control-range" id="point-light-position-y"
+                       oninput="changeLightPositionPoint()" value="0">
+            </div>
+
+            <div class="row">
+                <label for="point-light-position-z">z</label>
+                <input type="range" min="0" max="20" class="form-control-range" id="point-light-position-z"
+                       oninput="changeLightPositionPoint()" value="0">
+            </div>
+
+            <label class="parent-label">Decay</label>
+            <div class="row">
+                <label for="light-decay">d</label>
+                <input id="light-decay" class="form-control-range" type="range" min="0.0" max="2.0" step="0.01"
+                       oninput="changeLightDecay()" value="0.0">
+            </div>
+        </div>
+
+        <label class="parent-label">Colors</label>
+        <div class="row">
+            <label for="light-color">Light Color</label>
+            <input type="color" id="light-color" class="color-select" oninput="changeLightColor()" value="#FFFFFF">
+        </div>
+
+        <div class="row" style="margin-top: 5px">
+            <label for="ambient-color">Ambient Color</label>
+            <input type="color" id="ambient-color" class="color-select" oninput="setAmbientLightColor()" value="#FFFFFF">
+        </div>
+
+        <div class="row" style="margin-top: 5px">
+            <label for="diffuse-color">Diffuse Color</label>
+            <input type="color" id="diffuse-color" class="color-select" oninput="setDiffuseColor()" value="#FFFFFF">
+        </div>
+
+        <div class="row" style="margin-top: 5px">
+            <label for="ambient-mat-color">Ambient Mat. Color</label>
+            <input type="color" id="ambient-mat-color" class="color-select" oninput="setAmbientMatColor()" value="#FFFFFF">
+        </div>
+
+        <div class="row" style="margin-top: 5px">
+            <label for="specular-color">Specular Color</label>
+            <input type="color" id="specular-color" class="color-select" oninput="setSpecularColor()" value="#FFFFFF">
+        </div>
+
+        <label class="parent-label">Specular shiny</label>
+        <div class="row">
+            <label for="specular-shiny">&gamma;</label>
+            <input type="range" min="1" max="200" class="form-control-range" id="specular-shiny"
+                   oninput="setSpecShine()" value="200">
+        </div>
+
+<!--        <label class="parent-label">Light on/off</label>-->
+
+    </div>
+
+    <button id="action-btn" type="button" class="btn btn-success btn-lg" onclick="toggleAnimationState()">Play</button>
+    <button id="reset-btn" type="button" class="btn btn-primary btn-lg" onclick="resetAnimationState()">Reset</button>
+
+</div>
+</body>
+</html>

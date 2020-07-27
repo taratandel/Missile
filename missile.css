@@ -1,0 +1,93 @@
+#panel {
+  margin: 0;
+  background: rgba(256,256,256, 0.5);
+  width: 20%;
+  z-index: 10;
+  position: fixed;
+  bottom: 2em;
+  right: 2em;
+  padding: 1em;
+  border-radius: 0.5em;
+  min-width: 250px;
+}
+
+#camera-type-menu {
+  width: 100%;
+}
+
+.keyboard-help{
+  font-size: 0.7em;
+  margin-top: 2px;
+  padding: 0.5em;
+}
+
+.keyboard-help button{
+  font-size: 1em;
+  font-weight: 500;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  margin: 2px;
+
+}
+
+#free-view-help{
+  display: none;
+}
+
+.color-select {
+  margin: 0 0 0 1em;
+  padding: 0;
+  width: 1.0em;
+  height: 1.0em;
+  border: none;
+  box-shadow: none;
+  border-radius: 5px;
+}
+.row {
+  padding: 0 1em 0 1em;
+}
+.row label {
+  margin-bottom: 0;
+  min-width: 20px;
+  font-size: 0.8em;
+}
+
+.parent-label{
+  font-size: 0.8em;
+  margin-top: 5px;
+  font-weight: bold;
+}
+.row input[type="range"] {
+  width: calc(100% - 20px - 0.5em);
+  margin-left: 0.5em;
+  display: inline-block;
+  float: right;
+}
+
+#light-type-menu {
+  width: 100%;
+}
+#light-panel{
+  margin-top: 2px;
+  padding: 2px;
+}
+
+#action-btn{
+  width: 60%;
+  float: left;
+}
+#reset-btn {
+  width: 35%;
+  float: right;
+}
+
+#light-selector {
+  display: inline-block;
+  width: 50px;
+  height: 1.5em;
+  padding: 0;
+  margin: 0;
+  background: rgba(256,256,256,0.5);
+  border: 0;
+}

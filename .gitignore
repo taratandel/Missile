@@ -97,5 +97,9 @@ fabric.properties
 # Cache file creation bug
 # See https://youtrack.jetbrains.com/issue/JBR-2257
 .idea/$CACHE_FILE$
+.idea/
 
 # End of https://www.toptal.com/developers/gitignore/api/webstorm
+
+# removing .DS_Store
+.DS_Store

@@ -9,7 +9,7 @@ class Model {
 
     async initModel() {
         // we should load the object in the background so we wont stop for heavy objests
-        this.obj = await utils.get_objstr(this.url)
+        this.obj = await utils.get_objstr(this.url);
         // create a mesh from loaded object
         this.model = new OBJ.Mesh(this.obj);
     }
