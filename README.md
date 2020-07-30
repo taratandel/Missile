@@ -3,7 +3,7 @@
 Load the missile and the mountain with webgl.
 
 - The camera can switch between 1st person and 3rd person.
-- we support the direct light and spotlight.
+- we support the direct light and point light.
 - we use Lambert diffuse.
 - we use Phong specular.
 
